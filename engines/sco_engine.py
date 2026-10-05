@@ -437,9 +437,20 @@ def generate_sco_data():
         try:
             import openpyxl
             wb_kpi = openpyxl.load_workbook(KPI_EXCEL_PATH, data_only=True)
-            ws_kpi = wb_kpi.active
+            ws_kpi = wb_kpi['KPI_SCO'] if 'KPI_SCO' in wb_kpi.sheetnames else wb_kpi.active
             kpi_rows = list(ws_kpi.iter_rows(values_only=True))
             if len(kpi_rows) > 1:
+                def _safe_float(v):
+                    if v is None or v == "": return 0.0
+                    try:
+                        return float(str(v).replace(",", "."))
+                    except Exception:
+                        return 0.0
+
+                def _safe_pct(v):
+                    val = _safe_float(v)
+                    return val * 100.0 if abs(val) <= 2.0 and val != 0 else val
+
                 for r in kpi_rows[1:]:
                     nama = str(r[1] or "").strip()
                     if not nama or nama.lower() in ("nama", "total", ""):
@@ -451,31 +462,26 @@ def generate_sco_data():
                     else:
                         bulan_str = str(bulan_val or "").strip()
 
-                    def _safe_float(v):
-                        if v is None or v == "": return 0.0
-                        try:
-                            return float(str(v).replace(",", "."))
-                        except Exception:
-                            return 0.0
-
                     pjp = int(_safe_float(r[2]))
                     tgt_visit = _safe_float(r[3])
                     ach_visit = _safe_float(r[4])
-                    pct_visit = (ach_visit / tgt_visit * 100.0) if tgt_visit > 0 else 0.0
+                    pct_visit = _safe_pct(r[5]) if r[5] is not None else ((ach_visit / tgt_visit * 100.0) if tgt_visit > 0 else 0.0)
 
                     tgt_coll = _safe_float(r[6])
                     ach_coll = _safe_float(r[7])
-                    pct_coll = (ach_coll / tgt_coll * 100.0) if tgt_coll > 0 else 0.0
+                    pct_coll = _safe_pct(r[8]) if r[8] is not None else ((ach_coll / tgt_coll * 100.0) if tgt_coll > 0 else 0.0)
 
                     tgt_trx = _safe_float(r[9]) if len(r) > 9 else 0.0
                     ach_trx = _safe_float(r[10]) if len(r) > 10 else 0.0
-                    pct_trx = (ach_trx / tgt_trx * 100.0) if tgt_trx > 0 else 0.0
+                    pct_trx = _safe_pct(r[11]) if len(r) > 11 and r[11] is not None else ((ach_trx / tgt_trx * 100.0) if tgt_trx > 0 else 0.0)
 
                     trx_lalu = _safe_float(r[12]) if len(r) > 12 else 0.0
                     trx_ini = _safe_float(r[13]) if len(r) > 13 else 0.0
-                    growth = ((trx_ini - trx_lalu) / trx_lalu * 100.0) if trx_lalu > 0 else 0.0
+                    growth = _safe_pct(r[14]) if len(r) > 14 and r[14] is not None else (((trx_ini - trx_lalu) / trx_lalu * 100.0) if trx_lalu > 0 else 0.0)
 
-                    score = (pct_visit * 0.15) + (pct_coll * 0.25) + (pct_trx * 0.35) + (growth * 0.25)
+                    score = _safe_pct(r[15]) if len(r) > 15 and r[15] is not None else 0.0
+                    if score == 0.0:
+                        score = (pct_visit * 0.15) + (pct_coll * 0.25) + (pct_trx * 0.35) + (growth * 0.25)
                     insentif = _safe_float(r[16]) if len(r) > 16 else 0.0
 
                     kpi_sco_json.append({
@@ -540,12 +546,13 @@ def generate_sco_data():
         "reseller_file": RESELLER_JSON_OUTPUT,
         "agen_count": len(tren_agen_rows),
         "harian_count": len(harian_json_list),
+        "kpi_count": len(kpi_sco_json),
         "reseller_count": reseller_result.get("total_resellers", 0)
     }
 
 
 def generate_reseller_data(df_sukses: pd.DataFrame = None, months: list = None) -> dict:
-    """
+    r"""
     Kalkulasi Analisa Reseller % EWALLET per bulan dan tren tahunan untuk ASTAGA.
     Output disimpan ke C:\WEB REPORT\pages\sco\data_reseller.json.
     """
