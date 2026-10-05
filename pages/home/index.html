@@ -1,0 +1,98 @@
+<div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px;">Daily Transaksi Sukses</h2>
+    <p style="font-size: 14px; color: var(--text-muted); margin-top: 2px;">Perbandingan Bulan Berjalan vs Bulan Lalu per Cabang / Channel</p>
+  </div>
+  <div>
+    <span class="badge" id="last-updated">Memuat data...</span>
+  </div>
+</div>
+
+<div class="grid-cards">
+  <!-- Card ASTAGA -->
+  <section class="card" id="card-astaga">
+    <div class="card-header">
+      <h2>ASTAGA</h2>
+      <span class="card-meta" id="meta-astaga">Memuat periode...</span>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Cabang</th>
+            <th class="text-right">Daily Bln Ini</th>
+            <th class="text-right">Daily Bln Lalu</th>
+            <th class="text-right">Growth (+/-)</th>
+            <th class="text-right">Growth %</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-astaga">
+          <tr><td colspan="5" class="loader">Memuat data ASTAGA...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Card OKIPAY -->
+  <section class="card" id="card-okipay">
+    <div class="card-header">
+      <h2>OKIPAY</h2>
+      <span class="card-meta" id="meta-okipay">Memuat periode...</span>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Channel</th>
+            <th class="text-right">Daily Bln Ini</th>
+            <th class="text-right">Daily Bln Lalu</th>
+            <th class="text-right">Growth (+/-)</th>
+            <th class="text-right">Growth %</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-okipay">
+          <tr><td colspan="5" class="loader">Memuat data OKIPAY...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- SECTION AUDIT MASTER (RESELLER & PRODUK BARU / UNMAPPED) -->
+<div id="unmapped-audit-section" style="margin-top: 24px; display: none;">
+  <section class="card" style="border: 1px solid rgba(245, 158, 11, 0.4); background: var(--surface);">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--surface-border); padding-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 18px;">⚠️</span>
+        <div>
+          <h2 style="font-size: 15px; font-weight: 700; margin: 0; color: #d97706;">Audit Master: Kode Baru Terdeteksi di Transaksi</h2>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0 0;">Kode berikut muncul dalam transaksi tapi belum terdaftar di Master Customer / Produk</p>
+        </div>
+      </div>
+      <span class="badge" id="unmapped-total-badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 700;">
+        0 Item Baru
+      </span>
+    </div>
+
+    <div style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;" id="unmapped-content-grid">
+      <!-- Container ASTAGA -->
+      <div id="unmapped-box-astaga" style="background: var(--surface-bg, rgba(0,0,0,0.02)); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px;">
+        <div style="font-weight: 700; font-size: 13.5px; margin-bottom: 10px; display: flex; justify-content: space-between;">
+          <span>ASTAGA</span>
+          <span id="astaga-unmapped-badge" class="badge">0</span>
+        </div>
+        <div id="astaga-unmapped-list" style="font-size: 12.5px; color: var(--text-main);"></div>
+      </div>
+
+      <!-- Container OKIPAY -->
+      <div id="unmapped-box-okipay" style="background: var(--surface-bg, rgba(0,0,0,0.02)); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px;">
+        <div style="font-weight: 700; font-size: 13.5px; margin-bottom: 10px; display: flex; justify-content: space-between;">
+          <span>OKIPAY</span>
+          <span id="okipay-unmapped-badge" class="badge">0</span>
+        </div>
+        <div id="okipay-unmapped-list" style="font-size: 12.5px; color: var(--text-main);"></div>
+      </div>
+    </div>
+  </section>
+</div>
+

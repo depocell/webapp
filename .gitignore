@@ -1,0 +1,17 @@
+# Cache & Temporary data
+.cache/
+*.parquet
+*.bak
+*.bak_*
+__pycache__/
+*.pyc
+
+# Heavy Excel files & local exports
+POWER_AR.xlsx
+POWER_OKI.xlsx
+*.png
+*.csv
+
+# Raw data
+RAW DATA/
+C:\RAW DATA/

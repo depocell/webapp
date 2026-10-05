@@ -1,0 +1,270 @@
+<!-- SUB-PAGE TABS NAVIGATION -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 16px; border-bottom: 2px solid var(--surface-border); padding-bottom: 4px;">
+  <div style="display: flex; gap: 6px;">
+    <button type="button" id="tab-piv-channel" onclick="switchPivotSubPage('channel')" class="subpage-tab active-subpage-tab">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="6" y1="3" x2="6" y2="15"></line>
+        <circle cx="18" cy="6" r="3"></circle>
+        <circle cx="6" cy="18" r="3"></circle>
+        <path d="M18 9a9 9 0 0 1-9 9"></path>
+      </svg>
+      1. Pivot Table by Channel
+    </button>
+    <button type="button" id="tab-piv-product" onclick="switchPivotSubPage('product')" class="subpage-tab">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+      </svg>
+      2. Pivot Table by Product
+    </button>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+    <!-- Brand Toggle Switcher -->
+    <div style="display: flex; gap: 4px; background: var(--table-header); padding: 4px; border-radius: 8px; border: 1px solid var(--surface-border);">
+      <button type="button" id="btn-piv-astaga" class="brand-pill active-brand-astaga" onclick="switchPivotBrand('ASTAGA')">
+        ASTAGA
+      </button>
+      <button type="button" id="btn-piv-oki" class="brand-pill" onclick="switchPivotBrand('OKIPAY')">
+        OKIPAY
+      </button>
+    </div>
+
+    <!-- Export Button -->
+    <button type="button" onclick="exportPivotCSV()" style="padding: 7px 14px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface); color: var(--text-main); font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      Export CSV
+    </button>
+  </div>
+</div>
+
+<!-- HEADER DESCRIPTION -->
+<div style="margin-bottom: 18px;">
+  <h2 id="piv-main-title" style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px;">Pivot Table by Channel</h2>
+  <p id="piv-main-desc" style="font-size: 13.5px; color: var(--text-muted); margin-top: 2px;">
+    Analisis multidimensi fleksibel berdasarkan Cabang, Induk / Agen, Reseller, dan Channel Distribusi
+  </p>
+</div>
+
+<!-- PIVOT CONTROL PANEL -->
+<div class="card" style="padding: 18px 20px; margin-bottom: 20px;">
+  <!-- ROW 1: DIMENSIONS & METRIC -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 14px;">
+    <!-- Dimensi Baris -->
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+        1. Baris (Row Dimension)
+      </label>
+      <select id="piv-row-dim" onchange="runPivot()" class="piv-select">
+        <!-- Terisi dinamis sesuai sub page -->
+      </select>
+    </div>
+
+    <!-- Dimensi Kolom -->
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+        2. Kolom (Column Dimension)
+      </label>
+      <select id="piv-col-dim" onchange="runPivot()" class="piv-select">
+        <!-- Terisi dinamis sesuai sub page -->
+      </select>
+    </div>
+
+    <!-- Metrik / Nilai -->
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+        3. Nilai / Metrik (Value)
+      </label>
+      <select id="piv-metric" onchange="runPivot()" class="piv-select">
+        <option value="trx_count">Jumlah Transaksi (Count)</option>
+        <option value="daily_trx">Daily Trx (Rata-rata Trx / Hari)</option>
+        <option value="jual_sum">Total Omzet Penjualan (Rp)</option>
+        <option value="daily_jual">Daily Revenue / Jual (Rp / Hari)</option>
+        <option value="margin_sum">Total Margin (Rp)</option>
+        <option value="daily_margin">Daily Margin (Rp / Hari)</option>
+        <option value="beli_sum">Total Modal Beli (Rp)</option>
+        <option value="qty_sum">Total Qty Volume (Sum)</option>
+        <option value="sukses_pct">Success Rate (% Sukses)</option>
+      </select>
+    </div>
+
+    <!-- Filter Bulan -->
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+        Filter Periode Bulan
+      </label>
+      <select id="piv-filter-month" onchange="runPivot()" class="piv-select">
+        <option value="ALL">Semua Bulan (2026)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ROW 2: FILTERS & LIMIT -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: end; border-top: 1px dashed var(--surface-border); padding-top: 14px;">
+    <!-- Filter Status -->
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+        Filter Status
+      </label>
+      <select id="piv-filter-status" onchange="runPivot()" class="piv-select">
+        <option value="ALL">Semua Status</option>
+      </select>
+    </div>
+
+    <!-- Filter Cabang -->
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+        Filter Cabang
+      </label>
+      <select id="piv-filter-cabang" onchange="runPivot()" class="piv-select">
+        <option value="ALL">Semua Cabang</option>
+      </select>
+    </div>
+
+    <!-- Filter Kategori (Khusus Sub Page Product) -->
+    <div id="piv-box-kategori" style="display: none;">
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+        Filter Kategori
+      </label>
+      <select id="piv-filter-kategori" onchange="runPivot()" class="piv-select">
+        <option value="ALL">Semua Kategori</option>
+      </select>
+    </div>
+
+    <!-- Filter Operator (Khusus Sub Page Product) -->
+    <div id="piv-box-operator" style="display: none;">
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+        Filter Operator
+      </label>
+      <select id="piv-filter-operator" onchange="runPivot()" class="piv-select">
+        <option value="ALL">Semua Operator</option>
+      </select>
+    </div>
+
+    <!-- Limit Baris -->
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+        Tampilkan Baris
+      </label>
+      <select id="piv-limit" onchange="runPivot()" class="piv-select">
+        <option value="50">Top 50 Baris</option>
+        <option value="100" selected>Top 100 Baris</option>
+        <option value="250">Top 250 Baris</option>
+        <option value="1000">Top 1,000 Baris</option>
+      </select>
+    </div>
+
+    <!-- Action Button -->
+    <div style="display: flex;">
+      <button type="button" onclick="runPivot()" style="width: 100%; padding: 9px 16px; border-radius: 8px; border: none; background: var(--primary); color: #ffffff; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        Jalankan Pivot
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY METRICS CARDS -->
+<div id="piv-summary-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 20px;">
+  <div class="card" style="padding: 12px 16px;">
+    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total &amp; Daily Trx</div>
+    <div id="piv-sum-trx" style="font-size: 19px; font-weight: 800; margin-top: 4px;">-</div>
+    <div id="piv-sum-daily-trx" style="font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 600;">Daily: - / hari</div>
+  </div>
+  <div class="card" style="padding: 12px 16px;">
+    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Omzet &amp; Daily Revenue</div>
+    <div id="piv-sum-jual" style="font-size: 19px; font-weight: 800; margin-top: 4px; color: #0284c7;">-</div>
+    <div id="piv-sum-daily-jual" style="font-size: 12px; color: #0284c7; margin-top: 2px; font-weight: 600;">Daily: - / hari</div>
+  </div>
+  <div class="card" style="padding: 12px 16px;">
+    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total &amp; Daily Margin</div>
+    <div id="piv-sum-margin" style="font-size: 19px; font-weight: 800; margin-top: 4px; color: #16a34a;">-</div>
+    <div id="piv-sum-daily-margin" style="font-size: 12px; color: #16a34a; margin-top: 2px; font-weight: 600;">Daily: - / hari</div>
+  </div>
+  <div class="card" style="padding: 12px 16px;">
+    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Hari Aktif &amp; % Sukses</div>
+    <div id="piv-sum-rate" style="font-size: 19px; font-weight: 800; margin-top: 4px; color: #8b5cf6;">-%</div>
+    <div id="piv-sum-days" style="font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 600;">- Hari Aktif</div>
+  </div>
+</div>
+
+<!-- PIVOT TABLE RESULT CONTAINER -->
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div style="padding: 14px 20px; border-bottom: 1px solid var(--surface-border); display: flex; justify-content: space-between; align-items: center; background: var(--surface);">
+    <div style="font-size: 14px; font-weight: 700;" id="piv-table-title">Tabel Hasil Pivot</div>
+    <div style="font-size: 12px; color: var(--text-muted);" id="piv-exec-time">Selesai dalam - ms</div>
+  </div>
+
+  <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+    <table id="piv-result-table">
+      <thead id="piv-thead" style="position: sticky; top: 0; z-index: 10;">
+        <tr><th>Memuat kolom...</th></tr>
+      </thead>
+      <tbody id="piv-tbody">
+        <tr><td class="loader">Silakan klik "Jalankan Pivot" untuk menampilkan data...</td></tr>
+      </tbody>
+      <tfoot id="piv-tfoot">
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<style>
+  .subpage-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -6px;
+    transition: all 0.2s ease;
+  }
+  .subpage-tab:hover {
+    color: var(--text-main);
+  }
+  .active-subpage-tab {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: transparent;
+  }
+  .piv-select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
+    color: var(--text-main);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .piv-select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  #piv-result-table td, #piv-result-table th {
+    white-space: nowrap;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  #piv-tfoot tr {
+    background: var(--table-total);
+    font-weight: 800;
+    border-top: 2px solid var(--surface-border);
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+  }
+</style>

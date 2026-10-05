@@ -1,0 +1,317 @@
+<!-- PAGES/RESELLER/INDEX.HTML — Customer & Reseller Analytics (ASTAGA) -->
+
+<div style="display: flex; flex-direction: column; gap: 20px;">
+
+  <!-- HEADER BAR -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px;">Customer &amp; Reseller Analytics</h2>
+        <span class="badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-weight: 700;">ASTAGA</span>
+      </div>
+      <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 2px;">
+        Profil Customer, Komposisi Produk, % EWALLET, dan Tracking Retensi / Churn Reseller
+      </p>
+    </div>
+
+    <!-- FILTER PERIODE & ACTIONS -->
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label for="reseller-month-select" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">Periode:</label>
+        <select id="reseller-month-select" onchange="onResellerMonthChange(this.value)" class="daily-filter-select" style="min-width: 150px; font-weight: 600;">
+          <option value="">Memuat periode...</option>
+        </select>
+      </div>
+
+      <button type="button" onclick="exportResellerData()" class="btn-download-hd" style="background: #10b981; border-color: #059669;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- 6 KPI SUMMARY CARDS -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+    <!-- Card 1: Total Terdaftar -->
+    <div class="card" style="padding: 16px;">
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Total Terdaftar</div>
+      <div id="kpi-total-registered" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: var(--text-main);">-</div>
+      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Master Customer ASTAGA</div>
+    </div>
+
+    <!-- Card 2: Aktif Bulan Ini -->
+    <div class="card" style="padding: 16px; border-left: 4px solid #2563eb;">
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Aktif Bulan Ini</div>
+      <div id="kpi-active-current" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #2563eb;">-</div>
+      <div id="kpi-active-rate" style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">- % dari master</div>
+    </div>
+
+    <!-- Card 3: Aktif Rutin -->
+    <div class="card" style="padding: 16px; border-left: 4px solid #059669;">
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Aktif Rutin (Retained)</div>
+      <div id="kpi-retained" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #059669;">-</div>
+      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Aktif bln lalu &amp; bln ini</div>
+    </div>
+
+    <!-- Card 4: Baru / Reaktivasi -->
+    <div class="card" style="padding: 16px; border-left: 4px solid #0284c7;">
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Baru / Reaktivasi</div>
+      <div id="kpi-new-reactivated" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #0284c7;">-</div>
+      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Kembali / baru transaksi</div>
+    </div>
+
+    <!-- Card 5: Pasif / Churn -->
+    <div class="card" style="padding: 16px; border-left: 4px solid #dc2626;">
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Pasif / Churn</div>
+      <div id="kpi-churned" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #dc2626;">-</div>
+      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Aktif bln lalu, 0 bln ini</div>
+    </div>
+
+    <!-- Card 6: Total Trx & % EWALLET -->
+    <div class="card" style="padding: 16px; border-left: 4px solid #7c3aed;">
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Total Trx &amp; % EWALLET</div>
+      <div id="kpi-total-trx" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #7c3aed;">-</div>
+      <div id="kpi-pct-ewallet" style="font-size: 11.5px; font-weight: 600; color: #7c3aed; margin-top: 4px;">- % EWALLET</div>
+    </div>
+  </div>
+
+  <!-- CONTROL & FILTER BAR -->
+  <div class="card" style="padding: 16px 20px;">
+    <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+      
+      <!-- Kiri: Filter Status Tabs -->
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="status-filter-pills">
+        <button type="button" class="reseller-tab active" onclick="setResellerTab('semua_aktif', this)">
+          Semua Aktif (<span id="count-semua-aktif">0</span>)
+        </button>
+        <button type="button" class="reseller-tab" onclick="setResellerTab('rutin', this)">
+          Aktif Rutin (<span id="count-rutin">0</span>)
+        </button>
+        <button type="button" class="reseller-tab" onclick="setResellerTab('baru', this)">
+          Baru / Reaktivasi (<span id="count-baru">0</span>)
+        </button>
+        <button type="button" class="reseller-tab" onclick="setResellerTab('churn', this)">
+          Pasif / Churn (<span id="count-churn">0</span>)
+        </button>
+        <button type="button" class="reseller-tab" onclick="setResellerTab('ewallet_high', this)">
+          Dominan EWALLET &ge; 50% (<span id="count-ewallet">0</span>)
+        </button>
+      </div>
+
+      <!-- Kanan: Search & Cabang -->
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <!-- Cabang -->
+        <select id="reseller-cabang-select" onchange="applyResellerFilters()" class="daily-filter-select" style="font-size: 13px;">
+          <option value="ALL">Semua Cabang</option>
+        </select>
+
+        <!-- Search Input -->
+        <div style="position: relative;">
+          <input type="text" id="reseller-search-input" oninput="applyResellerFilters()" placeholder="Cari Kode, Nama, SCO..."
+                 style="padding: 8px 12px 8px 32px; border-radius: 8px; border: 1px solid var(--surface-border); font-size: 13px; background: var(--surface); color: var(--text-main); min-width: 220px;">
+          <svg style="position: absolute; left: 10px; top: 9px; width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAIN DATA TABLE -->
+  <div class="card" style="overflow: hidden;">
+    <div class="card-header" style="padding: 14px 20px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <h3 id="table-title" style="font-size: 15px; font-weight: 700; margin: 0;">Daftar Reseller</h3>
+        <span id="table-row-count" class="badge" style="background: var(--table-header); color: var(--text-muted); font-size: 11px;">0 baris</span>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted);">
+        Klik baris untuk melihat detail profil &amp; produk
+      </div>
+    </div>
+
+    <div class="table-container" style="max-height: 650px; overflow-y: auto;">
+      <table id="reseller-table">
+        <thead style="position: sticky; top: 0; z-index: 10; background: var(--table-header);">
+          <tr>
+            <th style="width: 45px; text-align: center;">#</th>
+            <th>Reseller</th>
+            <th>Cabang &amp; SCO</th>
+            <th>Jadwal &amp; Limit</th>
+            <th class="text-right">Total Trx</th>
+            <th class="text-right">Trx EWALLET</th>
+            <th class="text-right">% EWALLET</th>
+            <th>Komposisi Produk</th>
+            <th class="text-center">Status</th>
+            <th class="text-center" style="width: 70px;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="reseller-tbody">
+          <tr>
+            <td colspan="10" class="text-center" style="padding: 40px; color: var(--text-muted);">
+              Memuat data reseller...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TABLE FOOTER / PAGINATION -->
+    <div style="padding: 12px 20px; border-top: 1px solid var(--surface-border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); font-size: 13px; color: var(--text-muted); flex-wrap: wrap; gap: 10px;">
+      <div id="table-page-info">Menampilkan 0 dari 0 data</div>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button type="button" id="btn-page-prev" onclick="prevResellerPage()" class="reseller-btn-page" disabled>&laquo; Sebelumnya</button>
+        <span id="page-current-num" style="font-weight: 600; padding: 0 8px; color: var(--text-main);">1</span>
+        <button type="button" id="btn-page-next" onclick="nextResellerPage()" class="reseller-btn-page" disabled>Selanjutnya &raquo;</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL DETAIL RESELLER -->
+<div id="reseller-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+  <div class="card" style="width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalFadeIn 0.15s ease-out;">
+    <div class="card-header" style="padding: 16px 20px; border-bottom: 1px solid var(--surface-border); display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3 id="modal-reseller-title" style="font-size: 17px; font-weight: 800; margin: 0; color: var(--text-main);">-</h3>
+        <span id="modal-reseller-kode" style="font-size: 12px; font-weight: 600; color: var(--primary);">-</span>
+      </div>
+      <button type="button" onclick="closeResellerModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+
+    <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+      <!-- Profil Grid -->
+      <div style="background: var(--table-header); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px;">
+        <div>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Cabang:</span>
+          <strong id="modal-cabang">-</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">SCO:</span>
+          <strong id="modal-sco">-</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Agen ID:</span>
+          <strong id="modal-agen-id">-</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Jadwal Kunjungan:</span>
+          <strong id="modal-jadwal">-</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Limit:</span>
+          <strong id="modal-limit">-</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Status Keaktifan:</span>
+          <span id="modal-status" class="pill">-</span>
+        </div>
+      </div>
+
+      <!-- Komposisi Produk Bulan Ini -->
+      <div>
+        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Komposisi Transaksi</h4>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; margin-bottom: 12px;">
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 11px; color: #1e40af; font-weight: 600;">EWALLET</div>
+            <div id="modal-ewallet-trx" style="font-size: 16px; font-weight: 800; color: #1d4ed8; margin-top: 4px;">0</div>
+            <div id="modal-ewallet-pct" style="font-size: 11px; color: #1e40af; font-weight: 600;">0%</div>
+          </div>
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 11px; color: #166534; font-weight: 600;">TELCO</div>
+            <div id="modal-telco-trx" style="font-size: 16px; font-weight: 800; color: #15803d; margin-top: 4px;">0</div>
+          </div>
+          <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 11px; color: #854d0e; font-weight: 600;">PPOB</div>
+            <div id="modal-ppob-trx" style="font-size: 16px; font-weight: 800; color: #a16207; margin-top: 4px;">0</div>
+          </div>
+          <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 11px; color: #6b21a8; font-weight: 600;">TOKEN PLN</div>
+            <div id="modal-token-trx" style="font-size: 16px; font-weight: 800; color: #7e22ce; margin-top: 4px;">0</div>
+          </div>
+        </div>
+
+        <!-- Progress bar visual % EWALLET -->
+        <div style="margin-top: 8px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+            <span style="font-weight: 600; color: #1d4ed8;">Porsi EWALLET: <span id="modal-bar-pct">0%</span></span>
+            <span style="color: var(--text-muted);">Total: <span id="modal-bar-tot">0</span> Trx</span>
+          </div>
+          <div style="height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+            <div id="modal-bar-fill" style="height: 100%; width: 0%; background: #2563eb; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 12px 20px; border-top: 1px solid var(--surface-border); display: flex; justify-content: flex-end; background: var(--surface);">
+      <button type="button" onclick="closeResellerModal()" style="padding: 6px 16px; border-radius: 6px; border: 1px solid var(--surface-border); background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-main);">
+        Tutup
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* CSS Khusus Reseller Page */
+.reseller-tab {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.reseller-tab:hover {
+  background: var(--table-hover);
+  color: var(--text-main);
+}
+.reseller-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
+}
+.reseller-tab.active span {
+  font-weight: 700;
+}
+.reseller-btn-page {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.reseller-btn-page:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.badge-ewallet-high {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-weight: 700;
+}
+.badge-ewallet-normal {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  font-weight: 600;
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+</style>
