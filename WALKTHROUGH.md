@@ -1,142 +1,131 @@
 # 🚀 WALKTHROUGH & STATUS PROYEK: WEB REPORT BI
 
-Dokumen ini adalah rekam jejak resmi status pengerjaan sistem **WEB REPORT (`c:\WEB REPORT`)** per **05 Oktober 2026**. Berisi seluruh fitur yang sudah berstatus **DONE**, arsitektur backend/frontend, serta panduan operasional.
+Dokumen ini adalah rekam jejak resmi status pengerjaan dan **STANDAR ACUAN (GUIDELINES)** sistem **WEB REPORT (`c:\WEB REPORT`)** per **06 Oktober 2026**. 
+
+Semua agen / sesi AI **WAJIB** membaca dan mengikuti standar arsitektur, UI/typography, dan alur kerja di dokumen ini agar pengerjaan antar modul tetap seragam, konsisten, dan bebas konflik.
 
 ---
 
 ## 📌 DAFTAR MODUL & STATUS PENGERJAAN
 
+### A. MENU UTAMA
 | Modul | Halaman / Hash | Status | Deskripsi Singkat |
 | :--- | :--- | :---: | :--- |
 | **Overview Dashboard** | `#overview` | **DONE** ✅ | Tren perbandingan harian cabang, ringkasan brand, dan Audit Master widget otomatis. |
 | **Daily Summary Report** | `#daily` | **DONE** ✅ | Laporan harian performa cabang & produk, grafik Chart.js berlabel angka, tombol Download PNG HD. |
 | **SCO Executive Suite** | `#sco` | **DONE** ✅ | Portal SCO, auto-generate Parquet ke JSON, auto-push ke GitHub Pages (`depocell/SCO`). |
-| **Customer & Reseller** | `#reseller` | **DONE** ✅ | Profil lengkap, komposisi produk, analisa % EWALLET, tracking Retensi vs Churn ASTAGA. |
-| **Pivot Transaksi Dinamis**| `#transaksi` | **DONE** ✅ | Analisa pivot table bebas dimensi (Cabang, Bulan, Tanggal, Status) dengan metrik dinamis. |
-| **Mobile SCO (GitHub)** | GitHub Pages | **DONE** ✅ | Sorting Growth Terendah default di `detil_sco.html`, sort & filter EW di `reseller.html`, sidebar putih di `index.html`. |
-| **Analisa Produk** | `#produk` | *Roadmap* ⏳ | Modul berikutnya (analisa per kategori produk, margin, dan tren per SKU). |
+| **Agen & Reseller** | `#reseller` & `#agen` | **DONE** ✅ | Profil customer, rollup downline Agen Induk, komposisi produk, % EWALLET, tracking Retensi vs Churn ASTAGA, Filter Cabang, dan Export Excel `.xlsx`. |
+| **Produk Fisik & DSO** | `#produk` | **DONE** ✅ | Penjualan produk fisik (Voucher Fisik & Perdana) dan performa sales DSO dari rekapan SISCOM (`.ttx`). |
+
+### B. ANALISA
+| Modul | Halaman / Hash | Status | Deskripsi Singkat |
+| :--- | :--- | :---: | :--- |
+| **Dashboard Analisa (Chart Only)** | `#analisa` | **DONE** ✅ | Visualisasi grafis analitikal lengkap 2023-2026 bulanan dengan filter pills (Brand, Tahun, Bulan) tanpa tabel. 3 sub-analisa: **Distribusi** (relasi trx & customer), **Service** (relasi trx & produk), dan **Lain-Lain** (peak hours & status). |
+| ↳ *Analisa Distribusi* | `#analisa-distribusi` | **DONE** ✅ | Relasi volume transaksi bulanan & customer aktif 2023-2026, performa cabang, produktivitas TPM, segmentasi retensi/churn. |
+| ↳ *Analisa Service* | `#analisa-service` | **DONE** ✅ | Relasi transaksi & produk, tren penjualan multi-kategori (Telco, EWALLET, PLN, dll), komposisi share %, kualitas success rate. |
+| ↳ *Analisa Lain Lain* | `#analisa-lain` | **DONE** ✅ | Pola jam sibuk transaksi (hourly 00:00-23:00), status breakdown, distribusi hari mingguan. |
+| **Pivot Transaksi Dinamis** | `#transaksi` | **DONE** ✅ | Analisa multidimensi fleksibel (Cabang, Bulan, Channel, Produk, Status) + Export Excel `.xlsx` multi-format. |
 
 ---
 
-## 🛠️ RINCIAN IMPLEMENTASI YANG SUDAH SELESAI
-
-### 1. Backend Core & Parquet Engine (`engines/`)
-- **Incremental Cache Builder (`engines/transaction_engine.py`)**:
-  - Partisi cache bulanan disimpan di `.cache/parts/` (misal: `astaga_2026_01.parquet` s/d `astaga_2026_10.parquet`).
-  - Bulan lama otomatis di-freeze. Rebuild cache hanya memproses bulan berjalan (~5–8 detik vs ~216 detik cara lama).
-  - Pre-warm saat server boot: data 3,7 juta baris dimuat ke RAM sehingga respons API < 50ms.
-- **Audit Master Engine (`engines/overview_engine.py`)**:
-  - Otomatis memeriksa transaksi vs Master Reseller & Master Produk.
-  - Memberi notifikasi di dashboard jika ada kode reseller atau kode produk yang belum terdaftar di master Excel.
-- **Reseller Analytics Engine (`engines/reseller_engine.py`)**:
-  - Menghubungkan transaksi dengan `CUSTOMER_ASTAGA.xlsx` (Sheet `Mapping_Agen` dan `Reseller`).
-  - Menghitung segmentasi keaktifan:
-    - **Aktif Rutin (Retained)**: Transaksi bulan lalu dan bulan ini.
-    - **Baru / Reaktivasi**: Baru muncul transaksi di bulan ini.
-    - **Pasif / Churn**: Aktif di bulan lalu, tapi 0 transaksi di bulan ini.
-  - Menghitung porsi dan persentase **% EWALLET** per reseller.
-- **SCO Auto-Sync Engine (`engines/sco_engine.py`)**:
-  - Menghasilkan file `data_sco.json` dan `data_reseller.json` langsung dari cache Parquet.
-  - Fitur `api_sco_push`: 1-klik push commit ke GitHub Pages repo `https://github.com/depocell/SCO.git`.
+## 📊 STANDAR KHUSUS DASHBOARD ANALISA (CHART ONLY)
+Sesuai arahan resmi per 06 Oktober 2026:
+1. **Zero Table (Tanpa Tabel)**: Halaman analisa tidak boleh memuat elemen tabel (`<table>`). Tampilan 100% berbasis visualisasi grafik (Chart.js) dan KPI card.
+2. **Cakupan Multi-Tahun (2023 s/d Bulan Terakhir)**: Menampilkan tren bulanan jangka panjang (2023 s/d 2026 bulan berjalan).
+3. **Agregasi Level Bulanan**: Cukup data agregasi bulanan per titik (bukan data harian mikroskopik).
+4. **Filter Interaktif Menggunakan Pills**: Filter hanya menggunakan tombol kapsul (Pills) untuk **Brand** (`ASTAGA`, `OKIPAY`, `SEMUA`), **Tahun** (`ALL`, `2023`, `2024`, `2025`, `2026`), dan **Bulan** (`ALL`, `Jan` s/d `Des`).
+5. **Keseragaman Font (Google Typography Stack)**:
+   - Judul & Heading: `var(--font-heading)` (`'Plus Jakarta Sans'`)
+   - Deskripsi & Label: `var(--font-sans)` (`'Roboto'`)
+   - Angka & Metrik: `var(--font-mono)` (`'Roboto Mono'`)
 
 ---
 
-### 2. Frontend User Interface (`pages/` & `static/`)
-- **Single Shell Architecture (`templates/shell.html` & `static/js/app.js`)**:
-  - Navigasi mulus berbasis URL Hash (`#overview`, `#daily`, `#sco`, `#reseller`, `#transaksi`).
-  - Cache-busting otomatis pada script JavaScript sehingga kode selalu up-to-date saat direfresh.
-- **Daily Report HD Export (`pages/daily/`)**:
-  - Grafik harian dilengkapi plugin canvas teks: setiap bar menampilkan angka pasti transaksi.
-  - Export PNG resolusi tinggi (HD) via `html2canvas` siap dikirim ke manajemen/WhatsApp.
-- **Customer & Reseller Analytics (`pages/reseller/`)**:
-  - 6 KPI Card ringkasan (Total Terdaftar, Aktif, Retained, Baru, Churn, Total Trx & % EWALLET).
-  - Tab Filter Cepat: `Semua Aktif`, `Aktif Rutin`, `Baru/Reaktivasi`, `Pasif/Churn`, `Dominan EWALLET ≥ 50%`.
-  - Filter dropdown Cabang & Pencarian realtime (Nama, Kode, SCO, Agen).
-  - Modal Drawer: klik baris untuk melihat detail limit, jadwal kunjungan SCO, dan progress bar komposisi produk.
-  - Tombol **Export CSV** untuk download data reseller yang sedang difilter.
+## 🎨 STANDAR UI & TYPOGRAPHY RESMI (GOOGLE AESTHETICS)
+
+Untuk menjaga konsistensi visual di seluruh modul, semua agen **WAJIB** mematuhi standar desain berikut:
+
+### 1. Typography Stack (Material & Google Workspace Feel)
+Sistem menggunakan kombinasi font resmi Google:
+* **Body / Isi Tabel / Paragraf:** `'Roboto', -apple-system, sans-serif`  
+  *Gunakan variable CSS `var(--font-sans)`.* Font standar Google yang ramping, sangat jelas, dan nyaman dibaca pada data padat.
+* **Judul / Heading / Menu:** `'Plus Jakarta Sans', 'Google Sans', sans-serif`  
+  *Gunakan variable CSS `var(--font-heading)`.* Font geometrik modern yang memberikan aura ramah dan premium khas Google Workspace.
+* **Angka / Monospace / Kode / Limit:** `'Roboto Mono', monospace`  
+  *Gunakan variable CSS `var(--font-mono)` atau class `.font-mono`, `td.num`.* Menjaga angka ribuan dan Rupiah sejajar secara tabular.
+
+### 2. Pola Desain Tabel: "Stacked 2 Lantai" (Two-Line Cell)
+Hindari membuat 10–15 kolom terpisah yang membuat tabel melebar horizontal. Gunakan pola sel 2 lantai:
+* **Lantai Atas (Primary):** Data kunci, tebal (bold 700), font-size 13–13.5px (contoh: ID Reseller `AR08869`, Badge Cabang, Nama Jadwal).
+* **Lantai Bawah (Secondary):** Konteks pelengkap, subtle/muted (`color: var(--text-muted)`), font-size 11–11.5px (contoh: Nama Toko, Nama SCO, Nilai Limit).
+
+### 3. Pola "Inline Micro-Badges" Komposisi Produk
+Untuk menampilkan breakdown kategori transaksi dalam satu sel horizontal:
+* `EW` (E-Wallet): Biru (`#1d4ed8`, bg `rgba(29, 78, 216, 0.08)`)
+* `TEL` (Telco): Hijau (`#15803d`, bg `rgba(21, 128, 61, 0.08)`)
+* `PLN` (Token Listrik): Ungu (`#7e22ce`, bg `rgba(126, 34, 206, 0.08)`)
+* `PP` (PPOB): Oranye/Cokelat (`#a16207`, bg `rgba(161, 98, 7, 0.08)`)
+* `GM` (Game): Merah (`#b91c1c`, bg `rgba(185, 28, 28, 0.08)`)
+* `STK` (Transfer Stok): Abu-abu (`#475569`, bg `rgba(71, 85, 105, 0.08)`)
+
+### 4. Ekspor Dokumen
+* Utamakan ekspor langsung ke **Microsoft Excel (`.xlsx`)** menggunakan library lokal `static/js/xlsx.full.min.js`.
+* Setiap tombol export Excel diberi ikon SVG hijau + badge `.XLSX`.
+* Format sel numerik harus ter-encode dengan benar (`#,##0` untuk rupiah/integer, `0.0%` untuk persentase) dengan auto-width kolom.
 
 ---
 
-### 3. Mobile Web SCO (`pages/sco/` & GitHub Pages)
-- **Detil SCO (`detil_sco.html`)**:
-  - Default sorting diubah menjadi **Growth Terendah** (`growth_asc`) saat halaman pertama kali dibuka.
-- **Reseller SCO (`reseller.html`)**:
-  - Tab Bulan Ini: Default filter aktif di **Dominan EW (≥ 50%)**, urutan default **descending by Total Transaksi**.
-  - Tab Bulanan: Nama tab diubah menjadi **% EWALLET 2026**, urutan default **descending by Total Transaksi**.
-- **Ringkasan SCO (`index.html`)**:
-  - Sidebar diubah ke tema **Putih / Light Grey** (`#ffffff`), border halus `#e2e8f0`.
-  - Logo MyAstaga (`logo_myastaga.png`) tampil kontras dan jelas terbaca.
+## 🏗️ ARSITEKTUR MULTI-AGEN & PANDUAN KOLABORASI
 
-### 4. Optimalisasi Performa Mesin (*High-Performance Tuning*) ⚡
-- **In-Memory RAM Cache (`_MEMORY_CACHE`)**:
-  - File Parquet 51 MB (3,7 juta transaksi gabungan ASTAGA & OKIPAY) dimuat ke memori saat server boot.
-  - Panggilan API berikutnya membaca langsung dari RAM (~0,001 detik vs ~1,5 detik baca disk berulang).
-- **Vektorisasi Ekstraksi Bulan Transaksi (`ym`)**:
-  - Menggantikan Python string `.dt.strftime('%Y-%m')` yang memakan ~28 detik per brand dengan kalkulasi integer vektorisasi: `(dt.year * 100 + dt.month).map(lookup_dict)`.
-  - Durasi pemrosesan turun drastis dari **28 detik menjadi 0,2 detik** (~140x lebih cepat).
-- **Master Data Parquet & Fast JSON Cache**:
-  - Master `CUSTOMER_ASTAGA.xlsx` dan `CUSTOMER_OKI.xlsx` di-cache ke format `.parquet` dan `.json` terstruktur di folder `.cache/`.
-  - Mengeliminasi overhead pembacaan lambat library `openpyxl` saat request masuk, memangkas waktu dari **5,5 detik menjadi < 0,005 detik**.
-- **Vektorisasi Agregasi Reseller**:
-  - Menggantikan fungsi lambda Python berulang di Reseller Engine dengan **`pd.crosstab` vektorisasi**.
-  - Waktu agregasi porsi EWALLET/TELCO/PPOB/PLN terpangkas dari **54 detik menjadi 0,12 detik**.
-- **Server Pre-warm Otomatis (`server.py`)**:
-  - Thread latar belakang memuat seluruh DataFrame transaksi dan master metadata saat aplikasi dinyalakan, memastikan respons pertama pengguna sudah instan.
+Pengerjaan sistem ini menggunakan pola **Multi-Chat / Modular Task Isolation**. Untuk mencegah konflik (*conflict prevention*):
 
-#### 📊 Hasil Benchmark Kecepatan (*Before vs After Tuning*):
-| Modul / Endpoint | Sebelum Servis 🐢 | Sesudah Servis ⚡ | Peningkatan |
-| :--- | :---: | :---: | :---: |
-| **Overview Dashboard** (`/api/overview`) | **26,84 detik** | **2,75 detik** | **~10x Lebih Cepat** 🚀 |
-| **Reseller Analytics** (`/api/reseller?month=...`) | **13,54 detik** | **1,45 detik** | **~9x Lebih Cepat** 🚀 |
-| **Daily Report ASTAGA** (`/api/daily?brand=ASTAGA`) | **9,75 detik** | **1,63 detik** | **~6x Lebih Cepat** 🚀 |
-| **Daily Report OKIPAY** (`/api/daily?brand=OKIPAY`) | **6,40 detik** | **0,99 detik** | **~6,5x Lebih Cepat** 🚀 |
-| **Pivot Options** (`/api/pivot/options`) | **6,25 detik** | **0,30 detik** | **~20x Lebih Cepat** 🚀 |
-| **Pivot Query Table** (`/api/pivot/query`) | **0,45 detik** | **0,22 detik** | **Instan (< 0,3s)** ⚡ |
+### 1. Struktur Modul Mandiri (Self-Contained)
+Setiap modul baru ditempatkan di foldernya sendiri:
+* Halaman & Frontend JS: `pages/<nama_modul>/index.html` dan `pages/<nama_modul>/<nama_modul>.js`
+* Backend Komputasi: `engines/<nama_modul>_engine.py`
+
+### 2. Titik Temu Bersama (Central Touchpoints)
+Hanya ada 2 file sentral yang menghubungkan modul dengan aplikasi utama:
+1. **`server.py`**:
+   * Tambahkan route baru: `Route("/api/<modul>", api_<modul>)`.
+   * Hindari mengubah atau menimpa route lama.
+   * Gunakan `importlib.reload(...)` jika modul membutuhkan dynamic reload saat development.
+2. **`templates/shell.html` & `static/js/app.js`**:
+   * Tambahkan entri navigasi di `#sidebar` `templates/shell.html`.
+   * Daftarkan route hash di objek `ROUTES` pada `static/js/app.js`.
+
+### 3. Master Data & Cache Parquet Sifatnya Read-Only
+* Master Excel `MASTER/CUSTOMER_ASTAGA.xlsx` dan Parquet di `.cache/` hanya untuk dibaca saat kalkulasi. 
+* Jangan mengedit atau menimpa file master Excel secara otomatis dari engine tanpa instruksi eksplisit dari user.
+
+### 4. Peran Chat Utama (Control Room)
+* Chat utama bertindak sebagai **Integrator / Quality Control**.
+* Chat utama bertanggung jawab melakukan audit conflict, verifikasi integritas sistem menyeluruh, dan eksekusi commit & push (`sundul`) ke repository GitHub.
 
 ---
 
-## 🏃 PANDUAN MENJALANKAN SISTEM (LOCAL)
+## 🛠️ STATUS IMPLEMENTASI BACKEND CORE
 
-1. **Jalankan Server**:
-   ```powershell
-   cd "C:\WEB REPORT"
-   python server.py
-   ```
-   *Atau klik ganda file `run_report.bat`.*
-2. **Akses Dashboard**:
-   Buka browser di alamat:
-   **`http://localhost:8000`**
+1. **Incremental Cache Builder (`engines/transaction_engine.py`)**: Partisi bulanan di `.cache/parts/`, freeze bulan lama, boot time < 50ms via in-memory RAM cache.
+2. **Reseller Engine (`engines/reseller_engine.py`)**: Analisa profil, segmentasi keaktifan (Aktif Rutin, Baru, Churn), % EWALLET, cabang, jadwal, limit.
+3. **Agen Induk Engine (`engines/agen_engine.py`)**: Agregasi performa reseller ke Agen Induk, ranking produktivitas agen, filtering cabang.
+4. **Fisik & DSO Engine (`engines/fisik_engine.py`)**: Parsing rekapan penjualan fisik (.ttx) dan evaluasi performa DSO.
+5. **SCO Suite Engine (`engines/sco_engine.py`)**: Ekstraksi presisi 51 baris KPI SCO dari sheet `KPI_SCO` (bukan DSO), export `data_sco.json` dan `data_reseller.json`.
+6. **Pivot Engine (`engines/pivot_engine.py`)**: Agregasi transaksi multidimensi super cepat dengan cache terisolasi `cust_full_{brand}.parquet`.
 
 ---
 
-## 📂 STRUKTUR FOLDER PENTING
+## 🏃 CARA MENJALANKAN SISTEM (LOCAL)
 
-```
-C:\WEB REPORT\
-├── server.py                 # Entry point server (Starlette + Uvicorn)
-├── DEPLOYMENT_STRATEGY.md    # Blueprint panduan deployment 100% gratis
-├── WALKTHROUGH.md            # Rekam jejak fitur & performa (file ini)
-├── engines/                  # Backend processing engines
-│   ├── transaction_engine.py # Engine pembaca & pembuat Parquet + in-memory cache
-│   ├── overview_engine.py    # Engine tren harian & audit master
-│   ├── daily_engine.py       # Engine daily summary report
-│   ├── reseller_engine.py    # Engine profil, ewallet & churn reseller
-│   ├── sco_engine.py         # Engine auto-sync & push SCO
-│   └── pivot_engine.py       # Engine pivot dinamis
-├── pages/                    # Frontend views per module
-│   ├── home/                 # Modul Overview
-│   ├── daily/                # Modul Daily Report
-│   ├── reseller/             # Modul Customer & Reseller
-│   ├── transaksi/            # Modul Pivot Transaksi
-│   └── sco/                  # Repository git SCO (GitHub Pages)
-├── MASTER/                   # Master Excel (Customer & Produk)
-└── .cache/                   # Cache Parquet transaksi (Super cepat)
-    ├── parts/                # Partisi Parquet per bulan
-    ├── cust_astaga.parquet   # Cache master customer cepat
-    ├── cust_oki.parquet      # Cache master customer cepat
-    └── reseller_meta_cache.json # Cache profil agen & reseller cepat
+Server dijalankan secara manual oleh pengguna di terminal mandiri (agar tidak membebani proses background):
+
+```powershell
+cd "C:\WEB REPORT"
+python server.py
 ```
 
+Akses dashboard: **`http://localhost:8000`**
+
 ---
 
-*Terakhir diperbarui: 05 Oktober 2026 (Setelah Servis & Optimalisasi Performa Mesin).*
+*Terakhir diperbarui: 06 Oktober 2026 — Tim Arsitektur & IT Management WEB REPORT.*

@@ -177,9 +177,24 @@ window.applyResellerFilters = function() {
     });
   }
 
+  // Toggle Clear Button
+  const btnClear = document.getElementById('btn-clear-search');
+  if (btnClear) {
+    btnClear.style.display = sInput && sInput.value ? 'flex' : 'none';
+  }
+
   resellerState.filteredRows = source;
   resellerState.page = 1;
   renderResellerTable();
+};
+
+window.clearResellerSearch = function() {
+  const sInput = document.getElementById('reseller-search-input');
+  if (sInput) {
+    sInput.value = '';
+    sInput.focus();
+  }
+  window.applyResellerFilters();
 };
 
 function renderResellerTable() {
@@ -407,13 +422,160 @@ document.addEventListener('click', function(e) {
   }
 });
 
-window.exportResellerData = function() {
+function ensureXlsxLoaded() {
+  if (typeof XLSX !== 'undefined') return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = '/static/js/xlsx.full.min.js';
+    s.onload = () => resolve();
+    s.onerror = (err) => reject(err);
+    document.head.appendChild(s);
+  });
+}
+
+window.exportResellerExcel = async function() {
   const rows = resellerState.filteredRows;
   if (!rows || rows.length === 0) {
-    alert('Tidak ada data untuk diekspor.');
+    alert('Tidak ada data reseller yang cocok dengan filter untuk diekspor.');
     return;
   }
 
+  const period = (resellerState.raw && resellerState.raw.selected_month) || '2026';
+  const isChurn = resellerState.activeTab === 'churn';
+
+  const tabLabels = {
+    semua_aktif: 'Semua_Aktif',
+    rutin: 'Aktif_Rutin',
+    baru: 'Baru_Reaktivasi',
+    churn: 'Pasif_Churn',
+    ewallet_high: 'Dominan_EWALLET'
+  };
+  const tabName = tabLabels[resellerState.activeTab] || resellerState.activeTab;
+  const cabangName = resellerState.selectedCabang === 'ALL' ? 'Semua_Cabang' : resellerState.selectedCabang.replace(/\s+/g, '_');
+
+  try {
+    await ensureXlsxLoaded();
+  } catch (err) {
+    console.warn('XLSX library gagal dimuat, menggunakan fallback CSV:', err);
+    return exportResellerCSVFallback();
+  }
+
+  // Header definisi
+  const headers = isChurn ? [
+    'No',
+    'Kode Reseller',
+    'Nama Reseller',
+    'Cabang',
+    'Nama Agen',
+    'Agen ID',
+    'SCO',
+    'Jadwal Kunjungan',
+    'Limit (Rp)',
+    'Trx Bulan Lalu',
+    'Trx Bulan Ini',
+    'Status Keaktifan'
+  ] : [
+    'No',
+    'Kode Reseller',
+    'Nama Reseller',
+    'Cabang',
+    'Nama Agen',
+    'Agen ID',
+    'SCO',
+    'Jadwal Kunjungan',
+    'Limit (Rp)',
+    'Total Trx',
+    'Trx EWALLET',
+    '% EWALLET',
+    'Trx TELCO',
+    'Trx PPOB',
+    'Trx TOKEN PLN',
+    'Status Keaktifan'
+  ];
+
+  const sheetData = [headers];
+
+  rows.forEach((r, idx) => {
+    if (isChurn) {
+      sheetData.push([
+        idx + 1,
+        r.kode || '',
+        r.name || '',
+        r.cabang || '',
+        r.agen_name || '-',
+        r.agen_id || '-',
+        r.sco || '-',
+        r.jadwal || '-',
+        Number(r.limit) || 0,
+        Number(r.prev_trx) || 0,
+        0,
+        r.activity_status || 'Pasif / Churn'
+      ]);
+    } else {
+      sheetData.push([
+        idx + 1,
+        r.kode || '',
+        r.name || '',
+        r.cabang || '',
+        r.agen_name || '-',
+        r.agen_id || '-',
+        r.sco || '-',
+        r.jadwal || '-',
+        Number(r.limit) || 0,
+        Number(r.total_trx) || 0,
+        Number(r.ewallet_trx) || 0,
+        Number(r.pct_ewallet ? (r.pct_ewallet / 100).toFixed(3) : 0),
+        Number(r.telco_trx) || 0,
+        Number(r.ppob_trx) || 0,
+        Number(r.token_trx) || 0,
+        r.activity_status || 'Aktif Rutin'
+      ]);
+    }
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+  // Formatting % EWALLET
+  if (!isChurn) {
+    for (let r = 1; r < sheetData.length; r++) {
+      const cell = XLSX.utils.encode_cell({ r: r, c: 11 });
+      if (ws[cell]) {
+        ws[cell].z = '0.0%';
+      }
+    }
+  }
+
+  // Formatting Number Limit
+  const limitCol = 8;
+  for (let r = 1; r < sheetData.length; r++) {
+    const cell = XLSX.utils.encode_cell({ r: r, c: limitCol });
+    if (ws[cell]) {
+      ws[cell].z = '#,##0';
+    }
+  }
+
+  // Auto-width kolom
+  const colWidths = headers.map((h, colIdx) => {
+    let maxLen = h.length;
+    sheetData.forEach(row => {
+      const val = row[colIdx] != null ? String(row[colIdx]) : '';
+      if (val.length > maxLen) maxLen = val.length;
+    });
+    return { wch: Math.min(Math.max(maxLen + 3, 10), 45) };
+  });
+  ws['!cols'] = colWidths;
+
+  const wb = XLSX.utils.book_new();
+  const sheetTitle = isChurn ? 'Reseller Churn' : 'Customer & Reseller';
+  XLSX.utils.book_append_sheet(wb, ws, sheetTitle);
+
+  const filename = `Reseller_ASTAGA_${period}_${tabName}_${cabangName}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+// Fallback CSV jika terjadi kendala pada XLSX
+function exportResellerCSVFallback() {
+  const rows = resellerState.filteredRows;
   const period = (resellerState.raw && resellerState.raw.selected_month) || '2026';
   const headers = ['Kode', 'Nama', 'Cabang', 'SCO', 'Agen ID', 'Jadwal', 'Limit', 'Total Trx', 'Trx EWALLET', '% EWALLET', 'Trx Telco', 'Trx PPOB', 'Trx PLN', 'Status Keaktifan'];
   
@@ -447,7 +609,10 @@ window.exportResellerData = function() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-};
+}
+
+// Kompatibilitas alias fungsi lama
+window.exportResellerData = window.exportResellerExcel;
 
 function escapeHtml(str) {
   if (!str) return '';

@@ -13,6 +13,30 @@ const ROUTES = {
     scriptUrl: "/pages/daily/daily.js",
     initFn: "loadDaily"
   },
+  "#analisa": {
+    title: "Dashboard Analisa",
+    pageUrl: "/pages/analisa/index.html",
+    scriptUrl: "/pages/analisa/analisa.js",
+    initFn: "loadAnalisa"
+  },
+  "#analisa-distribusi": {
+    title: "Dashboard Analisa — Distribusi",
+    pageUrl: "/pages/analisa/index.html",
+    scriptUrl: "/pages/analisa/analisa.js",
+    initFn: "loadAnalisaDistribusi"
+  },
+  "#analisa-service": {
+    title: "Dashboard Analisa — Service",
+    pageUrl: "/pages/analisa/index.html",
+    scriptUrl: "/pages/analisa/analisa.js",
+    initFn: "loadAnalisaService"
+  },
+  "#analisa-lain": {
+    title: "Dashboard Analisa — Lain Lain",
+    pageUrl: "/pages/analisa/index.html",
+    scriptUrl: "/pages/analisa/analisa.js",
+    initFn: "loadAnalisaLain"
+  },
   "#sco": {
     title: "SCO Executive Suite",
     pageUrl: "/pages/sco/sco_view.html",
@@ -20,14 +44,22 @@ const ROUTES = {
     initFn: "initScoView"
   },
   "#reseller": {
-    title: "Customer & Reseller",
+    title: "Agen & Reseller",
     pageUrl: "/pages/reseller/index.html",
     scriptUrl: "/pages/reseller/reseller.js",
     initFn: "loadReseller"
   },
+  "#agen": {
+    title: "Agen & Reseller",
+    pageUrl: "/pages/agen/index.html",
+    scriptUrl: "/pages/agen/agen.js",
+    initFn: "loadAgen"
+  },
   "#produk": {
-    title: "Produk",
-    placeholder: "Modul Analisa Produk siap dibuat sesuai arahan Anda."
+    title: "Produk Fisik",
+    pageUrl: "/pages/fisik/index.html",
+    scriptUrl: "/pages/fisik/fisik.js",
+    initFn: "loadFisik"
   },
   "#transaksi": {
     title: "Pivot Transaksi Dinamis",
@@ -36,8 +68,10 @@ const ROUTES = {
     initFn: "loadTransaksi"
   },
   "#settings": {
-    title: "Pengaturan & Sync Cache",
-    placeholder: "Modul Status Cache & Sinkronisasi Data siap dibuat."
+    title: "Sistem & Pengaturan",
+    pageUrl: "/pages/settings/index.html",
+    scriptUrl: "/pages/settings/settings.js",
+    initFn: "loadSettings"
   }
 };
 
@@ -72,12 +106,27 @@ async function navigate() {
   document.getElementById("page-title").textContent = route.title;
   document.title = `${route.title} — Web Report`;
 
-  // Update Active Link in Sidebar
+  // Update Active Link in Sidebar (highlight #reseller link for both #reseller and #agen, highlight #analisa for its sub-routes)
   document.querySelectorAll(".nav-link").forEach(link => {
-    if (link.getAttribute("href") === hash) {
+    const href = link.getAttribute("href");
+    if (
+      href === hash ||
+      ((hash === "#agen" || hash === "#reseller") && href === "#reseller") ||
+      (hash.startsWith("#analisa") && href === "#analisa")
+    ) {
       link.classList.add("active");
     } else {
       link.classList.remove("active");
+    }
+  });
+
+  // Update Active Sub-Link under Analisa
+  document.querySelectorAll(".nav-sub-link").forEach(subLink => {
+    const subHref = subLink.getAttribute("href");
+    if (subHref === hash || (hash === "#analisa" && subHref === "#analisa-distribusi")) {
+      subLink.classList.add("active");
+    } else {
+      subLink.classList.remove("active");
     }
   });
 

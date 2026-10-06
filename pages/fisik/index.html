@@ -1,0 +1,321 @@
+<div class="fisik-container" style="display: flex; flex-direction: column; gap: 20px;">
+
+  <!-- TOP BAR FILTER & ACTION TOOLBAR -->
+  <div class="card" style="padding: 16px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+    <div>
+      <h2 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: rgba(2, 132, 199, 0.12); color: var(--primary);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </span>
+        Produk Fisik
+      </h2>
+      <p style="margin: 4px 0 0; font-size: 0.85rem; color: var(--text-muted);" id="fisik-period-subtitle">
+        Memuat data...
+      </p>
+    </div>
+
+    <!-- CONTROLS & REFRESH BUTTON -->
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+      <!-- Filter Periode -->
+      <div class="fisik-filter-group">
+        <label>Periode</label>
+        <select id="fisik-select-period" class="fisik-select" onchange="changeFisikFilter()">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+
+      <!-- Filter Cabang -->
+      <div class="fisik-filter-group">
+        <label>Cabang</label>
+        <select id="fisik-select-cabang" class="fisik-select" onchange="changeFisikFilter()">
+          <option value="ALL">Semua Cabang</option>
+        </select>
+      </div>
+
+      <!-- Filter Channel / Sales -->
+      <div class="fisik-filter-group">
+        <label>Channel</label>
+        <select id="fisik-select-channel" class="fisik-select" onchange="changeFisikFilter()">
+          <option value="ALL">Semua Channel</option>
+        </select>
+      </div>
+
+      <!-- Tombol Refresh Modern -->
+      <button type="button" class="btn-refresh-modern" onclick="loadFisik()" title="Segarkan Data Produk Fisik">
+        <svg class="btn-refresh-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>Refresh Data</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI SUMMARY CARDS (RINGKAS & RAPI) -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+    <!-- Card 1: Total Qty -->
+    <div class="card" style="padding: 18px 22px;">
+      <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Qty Terjual</div>
+      <div id="kpi-total-qty" style="font-size: 1.65rem; font-weight: 700; color: var(--primary); margin-top: 4px;">-</div>
+      <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">Voucher &amp; Perdana (Pcs)</div>
+    </div>
+
+    <!-- Card 2: Total Netto -->
+    <div class="card" style="padding: 18px 22px;">
+      <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Omset (Netto)</div>
+      <div id="kpi-total-netto" style="font-size: 1.65rem; font-weight: 700; color: var(--text-main); margin-top: 4px;">-</div>
+      <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">Nilai bersih penjualan produk fisik</div>
+    </div>
+
+    <!-- Card 3: Khusus Sales Lapangan (DSO) -->
+    <div class="card" style="padding: 18px 22px; border-left: 4px solid #10b981;">
+      <div style="font-size: 0.8rem; font-weight: 600; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px;">Omset Sales (DSO)</div>
+      <div id="kpi-sales-netto" style="font-size: 1.65rem; font-weight: 700; color: #10b981; margin-top: 4px;">-</div>
+      <div id="kpi-sales-sub" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">- pcs (-%)</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: TABEL BREAKDOWN PER CHANNEL / SALES & PER CABANG -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- Tabel Per Channel / Sales Person -->
+    <div class="card" style="padding: 18px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Rekap Performa Channel &amp; Sales (DSO)
+        </h3>
+        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 0.75rem;">Tim Sales Lapangan</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="table" style="width: 100%; font-size: 0.85rem;" id="table-channel">
+          <thead>
+            <tr>
+              <th style="text-align: left;">Channel / Sales</th>
+              <th style="text-align: left;">Tipe</th>
+              <th style="text-align: right;">Item</th>
+              <th style="text-align: right;">Qty</th>
+              <th style="text-align: right;">Total Netto (Rp)</th>
+              <th style="text-align: right;">Porsi</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-channel">
+            <tr><td colspan="6" style="text-align:center;">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabel Rekap Per Cabang -->
+    <div class="card" style="padding: 18px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          Rekap Penjualan Per Cabang / Depo
+        </h3>
+        <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; font-size: 0.75rem;">Wilayah Operasional</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="table" style="width: 100%; font-size: 0.85rem;" id="table-cabang">
+          <thead>
+            <tr>
+              <th style="text-align: left;">Cabang</th>
+              <th style="text-align: right;">Qty Fisik</th>
+              <th style="text-align: right;">Netto Fisik (Rp)</th>
+              <th style="text-align: right;">Qty Sales (DSO)</th>
+              <th style="text-align: right;">Netto Sales (Rp)</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-cabang">
+            <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: TABEL RANKING PRODUK TERLARIS & OPERATOR -->
+  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+    <!-- Breakdown Operator -->
+    <div class="card" style="padding: 18px;">
+      <h3 style="margin: 0 0 14px 0; font-size: 1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+          <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+          <line x1="12" y1="20" x2="12.01" y2="20"></line>
+        </svg>
+        Penjualan Per Operator
+      </h3>
+      <div style="overflow-x: auto;">
+        <table class="table" style="width: 100%; font-size: 0.85rem;">
+          <thead>
+            <tr>
+              <th style="text-align: left;">Operator</th>
+              <th style="text-align: right;">Varian</th>
+              <th style="text-align: right;">Qty</th>
+              <th style="text-align: right;">Netto (Rp)</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-operator">
+            <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Ranking Top 50 Produk Fisik -->
+    <div class="card" style="padding: 18px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          Ranking Produk Fisik Terlaris
+        </h3>
+        <input type="text" id="fisik-search-prod" placeholder="Cari nama produk..." oninput="filterProductTable()" class="form-control" style="width: 200px; padding: 6px 12px; font-size: 0.82rem; border-radius: 8px;">
+      </div>
+      <div style="overflow-x: auto; max-height: 420px; overflow-y: auto;">
+        <table class="table" style="width: 100%; font-size: 0.85rem;">
+          <thead style="position: sticky; top: 0; background: var(--surface); z-index: 2;">
+            <tr>
+              <th style="width: 40px; text-align: center;">#</th>
+              <th style="text-align: left;">Nama Produk</th>
+              <th style="text-align: left;">Operator</th>
+              <th style="text-align: left;">Kategori</th>
+              <th style="text-align: right;">Qty Terjual</th>
+              <th style="text-align: right;">Netto (Rp)</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-product">
+            <tr><td colspan="6" style="text-align:center;">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: RAW DATA / BARIS DETIL REKAPAN SISCOM -->
+  <div class="card" style="padding: 18px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div>
+        <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Detail Baris Rekapan SISCOM (Preview Data)
+        </h3>
+        <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-muted);">
+          Gunakan tabel ini untuk mengecek mana kolom/baris yang ingin kita pakai atau kita buang.
+        </p>
+      </div>
+      <span id="raw-row-count" class="badge" style="background: rgba(148, 163, 184, 0.2); font-size: 0.8rem;">0 Baris</span>
+    </div>
+
+    <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+      <table class="table" style="width: 100%; font-size: 0.82rem;">
+        <thead style="position: sticky; top: 0; background: var(--surface); z-index: 2;">
+          <tr>
+            <th style="width: 40px; text-align: center;">No.</th>
+            <th style="text-align: left;">Cabang</th>
+            <th style="text-align: left;">Channel / Sales</th>
+            <th style="text-align: left;">Nama Produk / Perincian</th>
+            <th style="text-align: left;">Operator</th>
+            <th style="text-align: left;">Tipe</th>
+            <th style="text-align: right;">Quantity</th>
+            <th style="text-align: right;">Gross (Rp)</th>
+            <th style="text-align: right;">Diskon (Rp)</th>
+            <th style="text-align: right;">Netto (Rp)</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-raw">
+          <tr><td colspan="10" style="text-align:center;">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODERN BUTTON & CONTROL STYLES -->
+<style>
+  .fisik-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--table-header);
+    padding: 3px 6px 3px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+  }
+  .fisik-filter-group label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .fisik-select {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: none;
+    background: var(--surface);
+    color: var(--text-main);
+    border-radius: 6px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.15s ease;
+  }
+  .fisik-select:hover {
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  /* BUTTON REFRESH ELEGAN & INTERAKTIF */
+  .btn-refresh-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 15px;
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    border: 1px solid rgba(2, 132, 199, 0.4);
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-refresh-modern:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);
+    transform: translateY(-1px);
+  }
+  .btn-refresh-modern:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(2, 132, 199, 0.2);
+  }
+  .btn-refresh-modern:hover .btn-refresh-icon {
+    transform: rotate(180deg);
+  }
+  .btn-refresh-icon {
+    transition: transform 0.4s ease;
+  }
+</style>

@@ -1,4 +1,4 @@
-<!-- PAGES/RESELLER/INDEX.HTML — Customer & Reseller Analytics (ASTAGA) -->
+<!-- PAGES/AGEN/INDEX.HTML — Customer & Agen Analytics (Induk / Rollup) -->
 
 <div style="display: flex; flex-direction: column; gap: 20px;">
 
@@ -6,17 +6,17 @@
   <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
     <div>
       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-        <h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px;">Agen &amp; Reseller Analytics</h2>
+        <h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px;">Agen &amp; Reseller Analytics (Induk Agen)</h2>
         <span class="badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-weight: 700;">ASTAGA</span>
         
         <!-- Toggle Level Reseller / Agen -->
         <div style="display: inline-flex; background: var(--table-header); padding: 3px; border-radius: 8px; border: 1px solid var(--surface-border);">
-          <a href="#reseller" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; background: var(--primary); color: #ffffff; box-shadow: 0 1px 2px rgba(37,99,235,0.25);">Level Reseller</a>
-          <a href="#agen" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-muted); transition: all 0.15s ease;">Level Agen (Induk)</a>
+          <a href="#reseller" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-muted); transition: all 0.15s ease;">Level Reseller</a>
+          <a href="#agen" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; background: var(--primary); color: #ffffff; box-shadow: 0 1px 2px rgba(37,99,235,0.25);">Level Agen (Induk)</a>
         </div>
       </div>
       <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 2px;">
-        Profil Customer, Komposisi Produk, % EWALLET, dan Tracking Retensi / Churn Reseller
+        Agregasi Performa Toko Induk, Utilisasi Downline Reseller, Plafon Limit, &amp; Penugasan SCO
       </p>
     </div>
 
@@ -34,7 +34,7 @@
           Periode:
         </span>
         <div class="custom-select-box">
-          <select id="reseller-month-select" onchange="onResellerMonthChange(this.value)" class="modern-header-select">
+          <select id="agen-month-select" onchange="onAgenMonthChange(this.value)" class="modern-header-select">
             <option value="">Memuat periode...</option>
           </select>
           <svg class="dropdown-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -44,7 +44,7 @@
       </div>
 
       <!-- Modern Excel Export Button -->
-      <button type="button" onclick="exportResellerExcel()" class="btn-excel-export" title="Export data terfilter ke format Microsoft Excel (.xlsx)">
+      <button type="button" onclick="exportAgenExcel()" class="btn-excel-export" title="Export data agen terfilter ke format Microsoft Excel (.xlsx)">
         <svg class="excel-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
           <polyline points="14 2 14 8 20 8"></polyline>
@@ -60,46 +60,46 @@
 
   <!-- 6 KPI SUMMARY CARDS -->
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
-    <!-- Card 1: Total Terdaftar -->
+    <!-- Card 1: Total Agen Terdaftar -->
     <div class="card" style="padding: 16px;">
-      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Total Terdaftar</div>
-      <div id="kpi-total-registered" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: var(--text-main);">-</div>
-      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Master Customer ASTAGA</div>
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Total Agen Terdaftar</div>
+      <div id="kpi-agen-registered" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: var(--text-main);">-</div>
+      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Master Toko Induk ASTAGA</div>
     </div>
 
-    <!-- Card 2: Aktif Bulan Ini -->
+    <!-- Card 2: Agen Aktif Bulan Ini -->
     <div class="card" style="padding: 16px; border-left: 4px solid #2563eb;">
-      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Aktif Bulan Ini</div>
-      <div id="kpi-active-current" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #2563eb;">-</div>
-      <div id="kpi-active-rate" style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">- % dari master</div>
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Agen Aktif Bulan Ini</div>
+      <div id="kpi-agen-active" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #2563eb;">-</div>
+      <div id="kpi-agen-active-rate" style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">- % dari master</div>
     </div>
 
-    <!-- Card 3: Aktif Rutin -->
+    <!-- Card 3: Agen Aktif Rutin -->
     <div class="card" style="padding: 16px; border-left: 4px solid #059669;">
       <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Aktif Rutin (Retained)</div>
-      <div id="kpi-retained" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #059669;">-</div>
+      <div id="kpi-agen-retained" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #059669;">-</div>
       <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Aktif bln lalu &amp; bln ini</div>
     </div>
 
-    <!-- Card 4: Baru / Reaktivasi -->
+    <!-- Card 4: Agen Baru / Reaktivasi -->
     <div class="card" style="padding: 16px; border-left: 4px solid #0284c7;">
       <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Baru / Reaktivasi</div>
-      <div id="kpi-new-reactivated" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #0284c7;">-</div>
-      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Kembali / baru transaksi</div>
+      <div id="kpi-agen-new" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #0284c7;">-</div>
+      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Kembali bertransaksi</div>
     </div>
 
-    <!-- Card 5: Pasif / Churn -->
+    <!-- Card 5: Agen Pasif / Churn -->
     <div class="card" style="padding: 16px; border-left: 4px solid #dc2626;">
       <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Pasif / Churn</div>
-      <div id="kpi-churned" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #dc2626;">-</div>
-      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Aktif bln lalu, 0 bln ini</div>
+      <div id="kpi-agen-churn" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #dc2626;">-</div>
+      <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Semua anak 0 transaksi</div>
     </div>
 
     <!-- Card 6: Total Trx & % EWALLET -->
     <div class="card" style="padding: 16px; border-left: 4px solid #7c3aed;">
-      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Total Trx &amp; % EWALLET</div>
-      <div id="kpi-total-trx" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #7c3aed;">-</div>
-      <div id="kpi-pct-ewallet" style="font-size: 11.5px; font-weight: 600; color: #7c3aed; margin-top: 4px;">- % EWALLET</div>
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Total Trx Rollup &amp; % EW</div>
+      <div id="kpi-agen-trx" style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #7c3aed;">-</div>
+      <div id="kpi-agen-pct-ew" style="font-size: 11.5px; font-weight: 600; color: #7c3aed; margin-top: 4px;">- % EWALLET</div>
     </div>
   </div>
 
@@ -108,21 +108,21 @@
     <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
       
       <!-- Kiri: Filter Status Tabs -->
-      <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="status-filter-pills">
-        <button type="button" class="reseller-tab active" onclick="setResellerTab('semua_aktif', this)">
-          Semua Aktif (<span id="count-semua-aktif">0</span>)
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="agen-status-filter-pills">
+        <button type="button" class="reseller-tab active" onclick="setAgenTab('semua_aktif', this)">
+          Semua Aktif (<span id="count-agen-semua-aktif">0</span>)
         </button>
-        <button type="button" class="reseller-tab" onclick="setResellerTab('rutin', this)">
-          Aktif Rutin (<span id="count-rutin">0</span>)
+        <button type="button" class="reseller-tab" onclick="setAgenTab('rutin', this)">
+          Aktif Rutin (<span id="count-agen-rutin">0</span>)
         </button>
-        <button type="button" class="reseller-tab" onclick="setResellerTab('baru', this)">
-          Baru / Reaktivasi (<span id="count-baru">0</span>)
+        <button type="button" class="reseller-tab" onclick="setAgenTab('baru', this)">
+          Baru / Reaktivasi (<span id="count-agen-baru">0</span>)
         </button>
-        <button type="button" class="reseller-tab" onclick="setResellerTab('churn', this)">
-          Pasif / Churn (<span id="count-churn">0</span>)
+        <button type="button" class="reseller-tab" onclick="setAgenTab('churn', this)">
+          Pasif / Churn (<span id="count-agen-churn">0</span>)
         </button>
-        <button type="button" class="reseller-tab" onclick="setResellerTab('ewallet_high', this)">
-          Dominan EWALLET &ge; 50% (<span id="count-ewallet">0</span>)
+        <button type="button" class="reseller-tab" onclick="setAgenTab('ewallet_high', this)">
+          Dominan EWALLET &ge; 50% (<span id="count-agen-ewallet">0</span>)
         </button>
       </div>
 
@@ -134,7 +134,7 @@
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
             <circle cx="12" cy="10" r="3"></circle>
           </svg>
-          <select id="reseller-cabang-select" onchange="applyResellerFilters()" class="modern-select has-icon-left">
+          <select id="agen-cabang-select" onchange="applyAgenFilters()" class="modern-select has-icon-left">
             <option value="ALL">Semua Cabang</option>
           </select>
           <svg class="dropdown-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -148,8 +148,8 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="reseller-search-input" oninput="applyResellerFilters()" placeholder="Cari Kode, Nama, SCO, Agen..." class="modern-input has-icon-left">
-          <button type="button" id="btn-clear-search" onclick="clearResellerSearch()" class="clear-search-btn" title="Hapus pencarian">&times;</button>
+          <input type="text" id="agen-search-input" oninput="applyAgenFilters()" placeholder="Cari Agen ID, Nama Toko, SCO..." class="modern-input has-icon-left">
+          <button type="button" id="btn-clear-agen-search" onclick="clearAgenSearch()" class="clear-search-btn" title="Hapus pencarian">&times;</button>
         </div>
       </div>
 
@@ -160,23 +160,24 @@
   <div class="card" style="overflow: hidden;">
     <div class="card-header" style="padding: 14px 20px;">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <h3 id="table-title" style="font-size: 15px; font-weight: 700; margin: 0;">Daftar Reseller</h3>
-        <span id="table-row-count" class="badge" style="background: var(--table-header); color: var(--text-muted); font-size: 11px;">0 baris</span>
+        <h3 id="agen-table-title" style="font-size: 15px; font-weight: 700; margin: 0;">Daftar Toko Induk Agen</h3>
+        <span id="agen-table-row-count" class="badge" style="background: var(--table-header); color: var(--text-muted); font-size: 11px;">0 baris</span>
       </div>
       <div style="font-size: 12px; color: var(--text-muted);">
-        Klik baris untuk melihat detail profil &amp; produk
+        Klik baris agen untuk melihat rincian utilisasi &amp; daftar reseller downline
       </div>
     </div>
 
     <div class="table-container" style="max-height: 650px; overflow-y: auto;">
-      <table id="reseller-table">
+      <table id="agen-table">
         <thead style="position: sticky; top: 0; z-index: 10; background: var(--table-header);">
           <tr>
             <th style="width: 45px; text-align: center;">#</th>
-            <th>Reseller</th>
+            <th>Toko Induk Agen</th>
             <th>Cabang &amp; SCO</th>
             <th>Jadwal &amp; Limit</th>
-            <th class="text-right">Total Trx</th>
+            <th class="text-center">Reseller Downline</th>
+            <th class="text-right">Total Trx Rollup</th>
             <th class="text-right">Trx EWALLET</th>
             <th class="text-right">% EWALLET</th>
             <th>Komposisi Produk</th>
@@ -184,10 +185,10 @@
             <th class="text-center" style="width: 70px;">Aksi</th>
           </tr>
         </thead>
-        <tbody id="reseller-tbody">
+        <tbody id="agen-tbody">
           <tr>
-            <td colspan="10" class="text-center" style="padding: 40px; color: var(--text-muted);">
-              Memuat data reseller...
+            <td colspan="11" class="text-center" style="padding: 40px; color: var(--text-muted);">
+              Memuat data transaksi Agen...
             </td>
           </tr>
         </tbody>
@@ -196,95 +197,124 @@
 
     <!-- TABLE FOOTER / PAGINATION -->
     <div style="padding: 12px 20px; border-top: 1px solid var(--surface-border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); font-size: 13px; color: var(--text-muted); flex-wrap: wrap; gap: 10px;">
-      <div id="table-page-info">Menampilkan 0 dari 0 data</div>
+      <div id="agen-table-page-info">Menampilkan 0 dari 0 data</div>
       <div style="display: flex; gap: 6px; align-items: center;">
-        <button type="button" id="btn-page-prev" onclick="prevResellerPage()" class="reseller-btn-page" disabled>&laquo; Sebelumnya</button>
-        <span id="page-current-num" style="font-weight: 600; padding: 0 8px; color: var(--text-main);">1</span>
-        <button type="button" id="btn-page-next" onclick="nextResellerPage()" class="reseller-btn-page" disabled>Selanjutnya &raquo;</button>
+        <button type="button" id="btn-agen-page-prev" onclick="prevAgenPage()" class="reseller-btn-page" disabled>&laquo; Sebelumnya</button>
+        <span id="agen-page-current-num" style="font-weight: 600; padding: 0 8px; color: var(--text-main);">1</span>
+        <button type="button" id="btn-agen-page-next" onclick="nextAgenPage()" class="reseller-btn-page" disabled>Selanjutnya &raquo;</button>
       </div>
     </div>
   </div>
 
 </div>
 
-<!-- MODAL DETAIL RESELLER -->
-<div id="reseller-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
-  <div class="card" style="width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalFadeIn 0.15s ease-out;">
+<!-- MODAL DETAIL AGEN & RESELLER DOWNLINE -->
+<div id="agen-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+  <div class="card" style="width: 92%; max-width: 780px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalFadeIn 0.15s ease-out;">
     <div class="card-header" style="padding: 16px 20px; border-bottom: 1px solid var(--surface-border); display: flex; justify-content: space-between; align-items: center;">
       <div>
-        <h3 id="modal-reseller-title" style="font-size: 17px; font-weight: 800; margin: 0; color: var(--text-main);">-</h3>
-        <span id="modal-reseller-kode" style="font-size: 12px; font-weight: 600; color: var(--primary);">-</span>
+        <h3 id="modal-agen-title" style="font-size: 17px; font-weight: 800; margin: 0; color: var(--text-main);">-</h3>
+        <span id="modal-agen-kode" style="font-size: 12px; font-weight: 700; color: var(--primary);">-</span>
       </div>
-      <button type="button" onclick="closeResellerModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
+      <button type="button" onclick="closeAgenModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); line-height: 1;">&times;</button>
     </div>
 
-    <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="padding: 20px; display: flex; flex-direction: column; gap: 18px;">
       <!-- Profil Grid -->
-      <div style="background: var(--table-header); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px;">
+      <div style="background: var(--table-header); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; font-size: 13px;">
         <div>
           <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Cabang:</span>
-          <strong id="modal-cabang">-</strong>
+          <strong id="modal-agen-cabang">-</strong>
         </div>
         <div>
-          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">SCO:</span>
-          <strong id="modal-sco">-</strong>
-        </div>
-        <div>
-          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Agen ID:</span>
-          <strong id="modal-agen-id">-</strong>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">SCO / DSO:</span>
+          <strong id="modal-agen-sco">-</strong>
         </div>
         <div>
           <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Jadwal Kunjungan:</span>
-          <strong id="modal-jadwal">-</strong>
+          <strong id="modal-agen-jadwal">-</strong>
         </div>
         <div>
-          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Limit:</span>
-          <strong id="modal-limit">-</strong>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Plafon Limit:</span>
+          <strong id="modal-agen-limit">-</strong>
         </div>
         <div>
-          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Status Keaktifan:</span>
-          <span id="modal-status" class="pill">-</span>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Status Toko:</span>
+          <span id="modal-agen-status" class="pill">-</span>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 11.5px; display: block;">Utilisasi Downline:</span>
+          <strong id="modal-agen-utilisasi" style="color: var(--primary);">-</strong>
         </div>
       </div>
 
-      <!-- Komposisi Produk Bulan Ini -->
+      <!-- Komposisi Transaksi Bulan Ini -->
       <div>
-        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Komposisi Transaksi</h4>
+        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Komposisi Transaksi Rollup</h4>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; margin-bottom: 12px;">
           <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px;">
             <div style="font-size: 11px; color: #1e40af; font-weight: 600;">EWALLET</div>
-            <div id="modal-ewallet-trx" style="font-size: 16px; font-weight: 800; color: #1d4ed8; margin-top: 4px;">0</div>
-            <div id="modal-ewallet-pct" style="font-size: 11px; color: #1e40af; font-weight: 600;">0%</div>
+            <div id="modal-agen-ewallet-trx" style="font-size: 16px; font-weight: 800; color: #1d4ed8; margin-top: 4px;">0</div>
+            <div id="modal-agen-ewallet-pct" style="font-size: 11px; color: #1e40af; font-weight: 600;">0%</div>
           </div>
           <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px;">
             <div style="font-size: 11px; color: #166534; font-weight: 600;">TELCO</div>
-            <div id="modal-telco-trx" style="font-size: 16px; font-weight: 800; color: #15803d; margin-top: 4px;">0</div>
+            <div id="modal-agen-telco-trx" style="font-size: 16px; font-weight: 800; color: #15803d; margin-top: 4px;">0</div>
           </div>
           <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 8px; padding: 10px;">
             <div style="font-size: 11px; color: #854d0e; font-weight: 600;">PPOB</div>
-            <div id="modal-ppob-trx" style="font-size: 16px; font-weight: 800; color: #a16207; margin-top: 4px;">0</div>
+            <div id="modal-agen-ppob-trx" style="font-size: 16px; font-weight: 800; color: #a16207; margin-top: 4px;">0</div>
           </div>
           <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 10px;">
             <div style="font-size: 11px; color: #6b21a8; font-weight: 600;">TOKEN PLN</div>
-            <div id="modal-token-trx" style="font-size: 16px; font-weight: 800; color: #7e22ce; margin-top: 4px;">0</div>
+            <div id="modal-agen-token-trx" style="font-size: 16px; font-weight: 800; color: #7e22ce; margin-top: 4px;">0</div>
           </div>
         </div>
 
         <!-- Progress bar visual % EWALLET -->
         <div style="margin-top: 8px;">
           <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
-            <span style="font-weight: 600; color: #1d4ed8;">Porsi EWALLET: <span id="modal-bar-pct">0%</span></span>
-            <span style="color: var(--text-muted);">Total: <span id="modal-bar-tot">0</span> Trx</span>
+            <span style="font-weight: 600; color: #1d4ed8;">Porsi EWALLET: <span id="modal-agen-bar-pct">0%</span></span>
+            <span style="color: var(--text-muted);">Total: <span id="modal-agen-bar-tot">0</span> Trx</span>
           </div>
           <div style="height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
-            <div id="modal-bar-fill" style="height: 100%; width: 0%; background: #2563eb; transition: width 0.3s ease;"></div>
+            <div id="modal-agen-bar-fill" style="height: 100%; width: 0%; background: #2563eb; transition: width 0.3s ease;"></div>
           </div>
         </div>
       </div>
+
+      <!-- TABEL DAFTAR RESELLER DOWNLINE (DRILLDOWN) -->
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h4 style="font-size: 14px; font-weight: 700; margin: 0;">
+            Daftar Reseller Anak (<span id="modal-child-count">0</span>)
+          </h4>
+          <span style="font-size: 11.5px; color: var(--text-muted);">Diurutkan dari transaksi tertinggi</span>
+        </div>
+        <div style="max-height: 220px; overflow-y: auto; border: 1px solid var(--surface-border); border-radius: 8px;">
+          <table style="width: 100%; font-size: 12.5px;">
+            <thead style="position: sticky; top: 0; background: var(--table-header); z-index: 5;">
+              <tr>
+                <th style="width: 35px; text-align: center;">#</th>
+                <th>Kode</th>
+                <th>Nama Reseller</th>
+                <th class="text-right">Trx Bulan Ini</th>
+                <th class="text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="modal-child-tbody">
+              <tr>
+                <td colspan="5" class="text-center" style="padding: 16px; color: var(--text-muted);">Tidak ada reseller downline.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
     <div style="padding: 12px 20px; border-top: 1px solid var(--surface-border); display: flex; justify-content: flex-end; background: var(--surface);">
-      <button type="button" onclick="closeResellerModal()" style="padding: 6px 16px; border-radius: 6px; border: 1px solid var(--surface-border); background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-main);">
+      <button type="button" onclick="closeAgenModal()" style="padding: 6px 18px; border-radius: 6px; border: 1px solid var(--surface-border); background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-main);">
         Tutup
       </button>
     </div>
@@ -292,7 +322,7 @@
 </div>
 
 <style>
-/* CSS Khusus Reseller Page */
+/* CSS Khusus Agen Page */
 .reseller-tab {
   background: var(--surface);
   border: 1px solid var(--surface-border);
@@ -343,7 +373,8 @@
   border: 1px solid #bbf7d0;
   font-weight: 600;
 }
-/* --- MODERN HEADER CONTROLS (PERIODE & EXCEL) --- */
+
+/* Header Controls */
 .filter-control-group {
   display: inline-flex;
   align-items: center;
@@ -402,7 +433,6 @@
   background: #ffffff;
   border-color: var(--primary);
 }
-
 .dropdown-chevron {
   position: absolute;
   right: 10px;
@@ -411,7 +441,7 @@
   transition: transform 0.2s ease;
 }
 
-/* --- BUTTON EXCEL EXPORT --- */
+/* Button Excel */
 .btn-excel-export {
   display: inline-flex;
   align-items: center;
@@ -452,7 +482,7 @@
   letter-spacing: 0.5px;
 }
 
-/* --- FILTER CABANG & SEARCH BAR --- */
+/* Filter Cabang & Search */
 .filter-cabang-box {
   min-width: 175px;
 }
@@ -486,7 +516,6 @@
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
-
 .modern-search-box {
   position: relative;
   display: flex;
@@ -545,7 +574,6 @@
   background: #cbd5e1;
   color: #0f172a;
 }
-
 @keyframes modalFadeIn {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }

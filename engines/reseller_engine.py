@@ -61,9 +61,14 @@ def load_master_meta():
         if c in df_r.columns:
             df_r[c] = df_r[c].fillna("").astype(str).str.replace("\xa0", " ").str.strip()
 
-    for c in ["AGEN ID", "AGEN NAME", "CABANG", "SCO", "JADWAL", "LIMIT", "STATUS"]:
+    for c in ["AGEN ID", "NAMA AGEN", "AGEN NAME", "CABANG", "SCO", "DSO", "JADWAL", "LIMIT", "STATUS"]:
         if c in df_a.columns:
             df_a[c] = df_a[c].fillna("").astype(str).str.replace("\xa0", " ").str.strip()
+
+    # Map nama toko langsung dari sheet Reseller
+    direct_res_names = {}
+    if "Kode Reseller" in df_r.columns and "Reseller Name" in df_r.columns:
+        direct_res_names = dict(zip(df_r["Kode Reseller"], df_r["Reseller Name"]))
 
     # Agen profiles
     agen_meta = {}
@@ -73,10 +78,27 @@ def load_master_meta():
             lim_val = float(row.get("LIMIT", 0))
         except Exception:
             lim_val = 0.0
+
+        raw_name = str(row.get("NAMA AGEN") or row.get("AGEN NAME") or "").strip()
+
+        # Bersihkan prefix seperti 'AR08869-'
+        clean_name = raw_name
+        if "-" in raw_name and raw_name.upper().startswith(aid.upper()):
+            clean_name = raw_name.split("-", 1)[1].strip()
+
+        # Fallback ke direct reseller name
+        if (not clean_name or clean_name == aid) and aid in direct_res_names:
+            clean_name = direct_res_names[aid]
+
+        if not clean_name:
+            clean_name = raw_name if raw_name else aid
+
         agen_meta[aid] = {
-            "agen_name": row.get("AGEN NAME", aid),
+            "agen_name": clean_name,
+            "raw_name": raw_name,
             "cabang": row.get("CABANG", "UNKNOWN"),
             "sco": row.get("SCO", "-"),
+            "dso": row.get("DSO", "-"),
             "jadwal": row.get("JADWAL", "-"),
             "limit": lim_val,
             "status": row.get("STATUS", "-")

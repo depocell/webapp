@@ -30,7 +30,7 @@ def get_customer_df(brand: str) -> pd.DataFrame:
         return pd.DataFrame()
 
     xlsx_mtime = os.path.getmtime(path)
-    p_cache = os.path.join(CACHE_DIR, f"cust_{brand.lower()}.parquet")
+    p_cache = os.path.join(CACHE_DIR, f"cust_full_{brand.lower()}.parquet")
 
     if brand in _CUST_CACHE and os.path.exists(p_cache) and os.path.getmtime(p_cache) >= xlsx_mtime:
         return _CUST_CACHE[brand]
@@ -94,6 +94,21 @@ def get_customer_df(brand: str) -> pd.DataFrame:
                 a_names = df_a[a_name_col].fillna("").astype(str).str.strip().str.replace("\xa0", "", regex=False)
                 map_name = dict(zip(clean_aids, a_names))
                 cust_df["agen_name"] = cust_df["agen_name"].where(cust_df["agen_name"].ne(""), cust_df["agen_id"].str.upper().map(map_name).fillna(""))
+
+        # Khusus jika agen_name masih kosong (seperti di OKIPAY), map Agen ID -> Reseller Name dari master Reseller
+        if "agen_name" in cust_df.columns:
+            empty_mask = cust_df["agen_name"].isna() | (cust_df["agen_name"].str.strip() == "")
+            if empty_mask.any():
+                id_to_name = dict(zip(cust_df["ar_id"], cust_df["reseller_name"]))
+                derived_name = cust_df["agen_id"].str.upper().map(id_to_name).fillna(cust_df["agen_id"])
+                cust_df["agen_name"] = cust_df["agen_name"].where(~empty_mask, cust_df["agen_id"] + " - " + derived_name)
+
+        # Fallback untuk tipe jika kosong (ambil dari kolom Leveling jika ada di df_r)
+        if "tipe" in cust_df.columns:
+            empty_tipe = cust_df["tipe"].isna() | (cust_df["tipe"].str.strip() == "")
+            leveling_col = next((c for c in df_r.columns if "leveling" in c.lower()), None)
+            if empty_tipe.any() and leveling_col:
+                cust_df["tipe"] = cust_df["tipe"].where(~empty_tipe, df_r[leveling_col].fillna("").astype(str).str.strip())
 
         cust_df = cust_df.drop_duplicates("ar_id")
         

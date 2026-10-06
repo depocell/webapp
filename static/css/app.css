@@ -1,5 +1,8 @@
 /* app.css — Global Styles & Layout Shell */
 :root {
+  --font-sans: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Google Sans', 'Roboto', sans-serif;
+  --font-mono: 'Roboto Mono', 'JetBrains Mono', monospace;
   --bg: #f8fafc;
   --surface: #ffffff;
   --surface-border: #e2e8f0;
@@ -24,7 +27,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0b1120;
     --surface: #1e293b;
     --surface-border: #334155;
@@ -48,6 +51,52 @@
   }
 }
 
+html[data-theme="dark"] {
+  --bg: #0b1120;
+  --surface: #1e293b;
+  --surface-border: #334155;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-light: #1e3a8a33;
+  --sidebar-bg: #0f172a;
+  --sidebar-border: #1e293b;
+  --sidebar-active: #1e3a8a44;
+  --sidebar-active-text: #93c5fd;
+  --table-header: #0f172a;
+  --table-hover: #1e293b88;
+  --table-total: #0f172a;
+  --positive: #4ade80;
+  --positive-bg: #14532d44;
+  --negative: #f87171;
+  --negative-bg: #7f1d1d44;
+  --badge-bg: #334155;
+}
+
+html[data-theme="light"] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-border: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e2e8f0;
+  --sidebar-active: #eff6ff;
+  --sidebar-active-text: #1d4ed8;
+  --table-header: #f1f5f9;
+  --table-hover: #f8fafc;
+  --table-total: #f1f5f9;
+  --positive: #16a34a;
+  --positive-bg: #dcfce7;
+  --negative: #dc2626;
+  --negative-bg: #fee2e2;
+  --badge-bg: #e2e8f0;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -55,11 +104,21 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   background-color: var(--bg);
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .brand-title, .nav-item, .nav-label {
+  font-family: var(--font-heading);
+}
+
+.font-mono, td.num, .badge-mono {
+  font-family: var(--font-mono);
 }
 
 /* ─── SIDEBAR ────────────────────────────────────────────── */
@@ -166,6 +225,60 @@ body {
 .nav-link.active svg {
   opacity: 1;
   stroke: var(--sidebar-active-text);
+}
+
+.nav-sub-menu {
+  list-style: none;
+  padding: 4px 0 6px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nav-sub-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.nav-sub-link::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.5;
+  transition: all 0.15s ease;
+}
+
+.nav-sub-link:hover {
+  background: var(--table-header);
+  color: var(--text-main);
+}
+
+.nav-sub-link:hover::before {
+  background: var(--primary);
+  opacity: 1;
+}
+
+.nav-sub-link.active {
+  color: var(--primary);
+  font-weight: 700;
+  background: rgba(2, 132, 199, 0.08);
+}
+
+.nav-sub-link.active::before {
+  background: var(--primary);
+  opacity: 1;
+  transform: scale(1.4);
 }
 
 .sidebar-footer {

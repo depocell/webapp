@@ -1,0 +1,535 @@
+<!-- PAGES/ANALISA/INDEX.HTML — Dashboard Analisa (Chart Only, Tren Bulanan 2023-2026) -->
+
+<div style="display: flex; flex-direction: column; gap: 20px; font-family: var(--font-sans);">
+
+  <!-- TOP HEADER & TITLE STRIP (Google Aesthetics & Plus Jakarta Sans) -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <h2 style="font-family: var(--font-heading); font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin: 0; color: var(--text-main);">
+          Dashboard Analisa
+        </h2>
+        <span class="badge" style="font-family: var(--font-mono); font-size: 11px; background: #e0f2fe; color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.25); font-weight: 700; padding: 3px 8px; border-radius: 6px;">
+          CHART ONLY • 2023-2026
+        </span>
+      </div>
+      <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 4px; margin-bottom: 0;">
+        Eksplorasi visual grafis tren bulanan multi-tahun (2023 s/d bulan terakhir) tanpa tabel data.
+      </p>
+    </div>
+
+    <!-- Tombol Refresh Visual -->
+    <div>
+      <button type="button" onclick="fetchAndRenderAnalisa()" class="btn-refresh-pills" title="Muat ulang data grafik">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>Refresh Chart</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- FILTER CONTROL PANEL (100% PILLS ONLY — BRAND, TAHUN & BULAN)             -->
+  <!-- ========================================================================= -->
+  <div class="card" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; background: var(--surface);">
+    
+    <!-- 1. Pills Brand -->
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <span class="filter-pill-label">BRAND:</span>
+      <div class="pill-group" id="pills-brand">
+        <button type="button" class="filter-pill active" data-brand="ASTAGA" onclick="setPillFilter('brand', 'ASTAGA')">
+          ASTAGA
+        </button>
+        <button type="button" class="filter-pill" data-brand="OKIPAY" onclick="setPillFilter('brand', 'OKIPAY')">
+          OKIPAY
+        </button>
+        <button type="button" class="filter-pill" data-brand="ALL" onclick="setPillFilter('brand', 'ALL')">
+          SEMUA (GABUNGAN)
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. Pills Tahun -->
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <span class="filter-pill-label">TAHUN:</span>
+      <div class="pill-group" id="pills-year">
+        <button type="button" class="filter-pill active" data-year="ALL" onclick="setPillFilter('year', 'ALL')">
+          Semua (2023 - 2026)
+        </button>
+        <button type="button" class="filter-pill" data-year="2026" onclick="setPillFilter('year', '2026')">
+          2026
+        </button>
+        <button type="button" class="filter-pill" data-year="2025" onclick="setPillFilter('year', '2025')">
+          2025
+        </button>
+        <button type="button" class="filter-pill" data-year="2024" onclick="setPillFilter('year', '2024')">
+          2024
+        </button>
+        <button type="button" class="filter-pill" data-year="2023" onclick="setPillFilter('year', '2023')">
+          2023
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. Pills Bulan -->
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <span class="filter-pill-label">BULAN:</span>
+      <div class="pill-group" id="pills-month">
+        <button type="button" class="filter-pill active" data-month="ALL" onclick="setPillFilter('month', 'ALL')">
+          Semua Bulan
+        </button>
+        <button type="button" class="filter-pill" data-month="01" onclick="setPillFilter('month', '01')">Jan</button>
+        <button type="button" class="filter-pill" data-month="02" onclick="setPillFilter('month', '02')">Feb</button>
+        <button type="button" class="filter-pill" data-month="03" onclick="setPillFilter('month', '03')">Mar</button>
+        <button type="button" class="filter-pill" data-month="04" onclick="setPillFilter('month', '04')">Apr</button>
+        <button type="button" class="filter-pill" data-month="05" onclick="setPillFilter('month', '05')">Mei</button>
+        <button type="button" class="filter-pill" data-month="06" onclick="setPillFilter('month', '06')">Jun</button>
+        <button type="button" class="filter-pill" data-month="07" onclick="setPillFilter('month', '07')">Jul</button>
+        <button type="button" class="filter-pill" data-month="08" onclick="setPillFilter('month', '08')">Agu</button>
+        <button type="button" class="filter-pill" data-month="09" onclick="setPillFilter('month', '09')">Sep</button>
+        <button type="button" class="filter-pill" data-month="10" onclick="setPillFilter('month', '10')">Okt</button>
+        <button type="button" class="filter-pill" data-month="11" onclick="setPillFilter('month', '11')">Nov</button>
+        <button type="button" class="filter-pill" data-month="12" onclick="setPillFilter('month', '12')">Des</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NAVIGATION TABS SUB-ANALISA -->
+  <div class="card" style="padding: 6px 10px; background: var(--surface);">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="analisa-main-tabs">
+      <button type="button" class="analisa-nav-tab active" id="tab-btn-distribusi" onclick="switchAnalisaTab('distribusi')">
+        <span style="font-size: 15px;">👥</span>
+        <span style="font-family: var(--font-heading); font-weight: 700;">Analisa Distribusi</span>
+        <span class="tab-badge-desc">Relasi Trx &amp; Customer (2023-2026)</span>
+      </button>
+
+      <button type="button" class="analisa-nav-tab" id="tab-btn-service" onclick="switchAnalisaTab('service')">
+        <span style="font-size: 15px;">📦</span>
+        <span style="font-family: var(--font-heading); font-weight: 700;">Analisa Service</span>
+        <span class="tab-badge-desc">Relasi Trx &amp; Product (2023-2026)</span>
+      </button>
+
+      <button type="button" class="analisa-nav-tab" id="tab-btn-lain" onclick="switchAnalisaTab('lain')">
+        <span style="font-size: 15px;">📈</span>
+        <span style="font-family: var(--font-heading); font-weight: 700;">Analisa Lain Lain</span>
+        <span class="tab-badge-desc">Peak Hours &amp; Status</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. TAB: ANALISA DISTRIBUSI (RELASI TRX & CUSTOMER BY YEAR BY MONTH)      -->
+  <!-- ========================================================================= -->
+  <div id="section-analisa-distribusi" class="analisa-tab-content active" style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <!-- Mini KPI Cards: Distribusi & Customer (Numbers in Roboto Mono) -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #0284c7;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Transaksi Terfilter</div>
+        <div id="dist-stat-trx" class="kpi-num" style="color: #0284c7;">-</div>
+        <div id="dist-stat-trx-sub" style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Akumulasi Periode Terpilih</div>
+      </div>
+      
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #10b981;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Rata-rata Customer Aktif</div>
+        <div id="dist-stat-member" class="kpi-num" style="color: #10b981;">-</div>
+        <div id="dist-stat-member-sub" style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Customer Aktif / Bulan</div>
+      </div>
+
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #8b5cf6;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Rata-rata Daily Trx / Member</div>
+        <div id="dist-stat-tpm" class="kpi-num" style="color: #8b5cf6;">-</div>
+        <div id="dist-stat-tpm-sub" style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Trx / Hari per Customer Aktif</div>
+      </div>
+
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #f59e0b;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Top Cabang / Channel</div>
+        <div id="dist-stat-top-cabang" class="kpi-num" style="color: #f59e0b;">-</div>
+        <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Porsi Transaksi Tertinggi</div>
+      </div>
+    </div>
+
+    <!-- Chart D1: Tren Transaksi & Customer Aktif (Harian / 12 Bulan / Multi-Tahun) -->
+    <div class="card" style="padding: 22px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 id="dist-trend-title" style="font-family: var(--font-heading); font-size: 16px; font-weight: 800; margin: 0; color: var(--text-main);">
+            Volume Daily Trx Sukses vs Customer Aktif
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0 0;">
+            Korelasi antara rata-rata transaksi sukses per hari (cut-off) dengan basis customer aktif bertransaksi
+          </p>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); display: flex; gap: 14px; align-items: center;">
+          <span style="display: flex; align-items: center; gap: 6px;">
+            <span style="display:inline-block; width:12px; height:12px; background:#0284c7; border-radius:3px;"></span> Daily Trx Sukses (Bar)
+          </span>
+          <span style="display: flex; align-items: center; gap: 6px;">
+            <span style="display:inline-block; width:14px; height:3px; background:#f59e0b; border-radius:2px;"></span> Customer Aktif (Line)
+          </span>
+        </div>
+      </div>
+      <div style="position: relative; height: 340px; width: 100%;">
+        <canvas id="chart-dist-trend"></canvas>
+      </div>
+    </div>
+
+    <!-- Row 2: Dua Grafik Analitikal Distribusi (Chart Only) -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px;">
+      
+      <!-- Chart D2: Kontribusi Volume per Cabang / Channel -->
+      <div class="card" style="padding: 20px;">
+        <div style="margin-bottom: 14px;">
+          <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 800; margin: 0;">
+            Kontribusi Transaksi per Cabang / Channel
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0 0;">
+            Volume transaksi per cabang dalam periode filter yang dipilih
+          </p>
+        </div>
+        <div style="position: relative; height: 300px; width: 100%;">
+          <canvas id="chart-dist-cabang"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart D3: Produktivitas Daily Trx / Member (Trx per Hari per Customer) -->
+      <div class="card" style="padding: 20px;">
+        <div style="margin-bottom: 14px;">
+          <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 800; margin: 0;">
+            Tren Produktivitas: Daily Trx / Member
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0 0;">
+            Rata-rata transaksi harian yang dihasilkan oleh tiap customer aktif
+          </p>
+        </div>
+        <div style="position: relative; height: 300px; width: 100%;">
+          <canvas id="chart-dist-tpm"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Chart D4: Proporsi Segmentasi Customer -->
+    <div class="card" style="padding: 20px;">
+      <div style="margin-bottom: 14px;">
+        <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 800; margin: 0;">
+          Segmentasi Retensi Customer (Rutin vs Reaktivasi vs Churn)
+        </h3>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0 0;">
+          Porsi customer bertransaksi rutin tiap bulan vs customer baru / reaktivasi
+        </p>
+      </div>
+      <div style="position: relative; height: 260px; width: 100%;">
+        <canvas id="chart-dist-segment"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. TAB: ANALISA SERVICE (RELASI TRX & PRODUCT BY YEAR BY MONTH)          -->
+  <!-- ========================================================================= -->
+  <div id="section-analisa-service" class="analisa-tab-content" style="display: none; flex-direction: column; gap: 20px;">
+    
+    <!-- Mini KPI Cards: Service & Produk -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #10b981;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Success Rate Layanan</div>
+        <div id="serv-stat-sukses" class="kpi-num" style="color: #10b981;">-</div>
+        <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Tingkat Keberhasilan Transaksi</div>
+      </div>
+      
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #06b6d4;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Avg Durasi Kecepatan</div>
+        <div id="serv-stat-durasi" class="kpi-num" style="color: #06b6d4;">-</div>
+        <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Rata-rata Speed Transaksi</div>
+      </div>
+
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #8b5cf6;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Dominan Kategori</div>
+        <div id="serv-stat-kategori" class="kpi-num" style="color: #8b5cf6;">-</div>
+        <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Porsi Kategori Terbesar</div>
+      </div>
+
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #ec4899;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Transaksi Service</div>
+        <div id="serv-stat-total" class="kpi-num" style="color: #ec4899;">-</div>
+        <div id="serv-stat-total-sub" style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Akumulasi Periode Terpilih</div>
+      </div>
+    </div>
+
+    <!-- Chart S1: Tren Penjualan Produk (Harian / 12 Bulan / Multi-Tahun) -->
+    <div class="card" style="padding: 22px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 id="serv-trend-title" style="font-family: var(--font-heading); font-size: 16px; font-weight: 800; margin: 0; color: var(--text-main);">
+            Tren Penjualan per Kategori Produk
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0 0;">
+            Pergerakan volume EWALLET, TELCO, PLN, PPOB, dan GAME pada periode terfilter
+          </p>
+        </div>
+      </div>
+      <div style="position: relative; height: 340px; width: 100%;">
+        <canvas id="chart-serv-trend"></canvas>
+      </div>
+    </div>
+
+    <!-- Row 2: Dua Grafik Analitikal Produk (Chart Only) -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px;">
+      
+      <!-- Chart S2: Market Share Kategori Produk (% Share Donut) -->
+      <div class="card" style="padding: 20px;">
+        <div style="margin-bottom: 14px;">
+          <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 800; margin: 0;">
+            Market Share Kategori Produk (% Share)
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0 0;">
+            Pergeseran dominasi kategori produk pada periode terfilter
+          </p>
+        </div>
+        <div style="position: relative; height: 300px; width: 100%;">
+          <canvas id="chart-serv-produk"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart S3: Kualitas Layanan (% Sukses Rate per Bulan) -->
+      <div class="card" style="padding: 20px;">
+        <div style="margin-bottom: 14px;">
+          <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 800; margin: 0;">
+            Tren Kualitas Sukses Layanan (% Sukses Rate)
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0 0;">
+            Stabilitas persentase transaksi berhasil dari bulan ke bulan
+          </p>
+        </div>
+        <div style="position: relative; height: 300px; width: 100%;">
+          <canvas id="chart-serv-sukses-rate"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Chart S4: Ranking Volume Kategori Produk -->
+    <div class="card" style="padding: 20px;">
+      <div style="margin-bottom: 14px;">
+        <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 800; margin: 0;">
+          Volume Transaksi per Kategori Produk
+        </h3>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0 0;">
+          Perbandingan kuantitas transaksi antar kelompok produk
+        </p>
+      </div>
+      <div style="position: relative; height: 260px; width: 100%;">
+        <canvas id="chart-serv-ranking"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. TAB: ANALISA LAIN LAIN (PEAK HOURS, STATUS, DLL)                      -->
+  <!-- ========================================================================= -->
+  <div id="section-analisa-lain" class="analisa-tab-content" style="display: none; flex-direction: column; gap: 20px;">
+    
+    <!-- Mini KPI Cards: Pola Waktu & Status -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #f59e0b;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Peak Hours Transaksi</div>
+        <div id="lain-stat-peak" class="kpi-num" style="color: #f59e0b;">19:00 - 21:00</div>
+        <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Jam Puncak Transaksi Terpadat</div>
+      </div>
+      
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #10b981;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Tingkat Keberhasilan</div>
+        <div id="lain-stat-sukses-rate" class="kpi-num" style="color: #10b981;">98.4%</div>
+        <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Total Transaksi Sukses</div>
+      </div>
+
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #ef4444;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Tingkat Kendala / Reject</div>
+        <div id="lain-stat-gagal-rate" class="kpi-num" style="color: #ef4444;">1.6%</div>
+        <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Gagal Nomor, Saldo, &amp; Timeout</div>
+      </div>
+
+      <div class="card" style="padding: 16px 20px; border-left: 4px solid #6366f1;">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Hari Terpadat</div>
+        <div id="lain-stat-hari" class="kpi-num" style="color: #6366f1;">Sabtu &amp; Jumat</div>
+        <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Lonjakan Transaksi Mingguan</div>
+      </div>
+    </div>
+
+    <!-- Chart L1: Pola Jam Sibuk (Hourly Peak 00:00 - 23:00) -->
+    <div class="card" style="padding: 22px;">
+      <div style="margin-bottom: 16px;">
+        <h3 style="font-family: var(--font-heading); font-size: 16px; font-weight: 800; margin: 0; color: var(--text-main);">
+          Pola Jam Sibuk Transaksi (Hourly Distribution 24 Jam)
+        </h3>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0 0;">
+          Rata-rata volume per jam untuk analisis kapasitas server dan alokasi saldo suplier
+        </p>
+      </div>
+      <div style="position: relative; height: 320px; width: 100%;">
+        <canvas id="chart-lain-hourly"></canvas>
+      </div>
+    </div>
+
+    <!-- Row 2: Status Breakdown & Pola Hari Mingguan -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px;">
+      
+      <!-- Chart L2: Breakdown Status Transaksi -->
+      <div class="card" style="padding: 20px;">
+        <div style="margin-bottom: 14px;">
+          <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 800; margin: 0;">
+            Rincian Status Transaksi
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0 0;">
+            Proporsi Sukses vs Gagal Nomor vs Gagal Saldo vs Timeout
+          </p>
+        </div>
+        <div style="position: relative; height: 280px; width: 100%;">
+          <canvas id="chart-lain-status"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart L3: Pola Hari dalam Seminggu -->
+      <div class="card" style="padding: 20px;">
+        <div style="margin-bottom: 14px;">
+          <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 800; margin: 0;">
+            Distribusi Hari dalam Seminggu
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0 0;">
+            Rata-rata transaksi harian per hari (Senin s/d Minggu)
+          </p>
+        </div>
+        <div style="position: relative; height: 280px; width: 100%;">
+          <canvas id="chart-lain-weekday"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- STYLES KHUSUS ANALISA DASHBOARD & PILLS FILTER (Sesuai WALKTHROUGH.md) -->
+<style>
+  .kpi-num {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-top: 6px;
+    letter-spacing: -0.5px;
+  }
+  
+  .filter-pill-label {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.8px;
+    width: 60px;
+    flex-shrink: 0;
+  }
+
+  .pill-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-pill {
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  .filter-pill:hover {
+    border-color: #94a3b8;
+    color: var(--text-main);
+    background: var(--table-header);
+  }
+
+  .filter-pill.active {
+    background: var(--primary);
+    color: #ffffff !important;
+    border-color: var(--primary);
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+  }
+
+  .btn-refresh-pills {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
+    color: var(--text-main);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+
+  .btn-refresh-pills:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+  }
+
+  .analisa-nav-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .analisa-nav-tab:hover {
+    background: var(--table-header);
+    color: var(--text-main);
+  }
+
+  .analisa-nav-tab.active {
+    background: var(--table-header);
+    color: var(--primary);
+    border-color: var(--surface-border);
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  .tab-badge-desc {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.75;
+    background: rgba(0,0,0,0.05);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+</style>

@@ -11,6 +11,11 @@ POWER_AR.xlsx
 POWER_OKI.xlsx
 *.png
 *.csv
+~$*.xlsx
+Pivot_*.xlsx
+Reseller_*.xlsx
+0926_preview.xlsx
+desktop.ini
 
 # Raw data
 RAW DATA/

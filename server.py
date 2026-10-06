@@ -22,6 +22,10 @@ import engines.daily_engine as daily_engine
 import engines.pivot_engine as pivot_engine
 import engines.sco_engine as sco_engine
 import engines.reseller_engine as reseller_engine
+import engines.agen_engine as agen_engine
+import engines.fisik_engine as fisik_engine
+import engines.system_engine as system_engine
+import engines.analisa_engine as analisa_engine
 
 PAGES_DIR = os.path.join(BASE_DIR, "pages")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
@@ -167,6 +171,8 @@ async def api_trx_summary(request):
 async def api_sco_generate(request):
     """Generate ulang data_sco.json dari cache transaksi Parquet."""
     try:
+        import importlib
+        importlib.reload(sco_engine)
         res = sco_engine.generate_sco_data()
         return JSONResponse(res)
     except Exception as e:
@@ -178,6 +184,8 @@ async def api_sco_generate(request):
 async def api_sco_push(request):
     """Push folder pages/sco ke GitHub Pages (https://github.com/depocell/SCO)."""
     try:
+        import importlib
+        importlib.reload(sco_engine)
         res = sco_engine.push_to_github()
         return JSONResponse(res)
     except Exception as e:
@@ -189,6 +197,8 @@ async def api_sco_push(request):
 async def api_sco_check(request):
     """Auto-check: jika data_sco.json stale → regenerate otomatis, else langsung ok."""
     try:
+        import importlib
+        importlib.reload(sco_engine)
         stale = sco_engine.is_stale()
         if not stale:
             return JSONResponse({"ok": True, "stale": False, "message": "Data SCO sudah up-to-date."})
@@ -216,6 +226,63 @@ async def api_reseller(request):
         return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
 
 
+async def api_agen(request):
+    """Data komputasi profil & analisa Level Agen Induk ASTAGA (Rollup Reseller)."""
+    month = request.query_params.get("month")
+    year = request.query_params.get("year", "2026")
+    try:
+        data = agen_engine.calculate_agen_dashboard(month_code=month, year=year)
+        return JSONResponse({"ok": True, "data": data})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
+async def api_fisik(request):
+    """Data laporan penjualan produk fisik & sales DSO dari rekapan SISCOM (.ttx)."""
+    period = request.query_params.get("period")
+    cabang = request.query_params.get("cabang", "ALL")
+    channel = request.query_params.get("channel", "ALL")
+    try:
+        data = fisik_engine.get_fisik_dashboard(
+            period_code=period,
+            cabang_filter=cabang,
+            channel_filter=channel
+        )
+        return JSONResponse(data)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
+async def api_system_info(request):
+    """Informasi sistem, status cut-off data transaksi & audit kesehatan master file."""
+    year = request.query_params.get("year", "2026")
+    try:
+        data = system_engine.get_system_overview(year=year)
+        return JSONResponse({"ok": True, "data": data})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
+async def api_analisa_data(request):
+    """Data analitikal bulanan multi-tahun (2023 s/d 2026) untuk Dashboard Analisa (Chart Only)."""
+    brand = request.query_params.get("brand", "ALL")
+    year = request.query_params.get("year", "ALL")
+    month = request.query_params.get("month", "ALL")
+    try:
+        data = analisa_engine.query_analisa_data(brand=brand, year=year, month=month)
+        return JSONResponse(data)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
 # ─── Routing ─────────────────────────────────────────────────────────────────
 
 routes = [
@@ -226,6 +293,10 @@ routes = [
     Route("/api/pivot/options", api_pivot_options),
     Route("/api/pivot/query",   api_pivot_query),
     Route("/api/reseller",      api_reseller),
+    Route("/api/agen",          api_agen),
+    Route("/api/fisik",         api_fisik),
+    Route("/api/system/info",   api_system_info),
+    Route("/api/analisa/data",  api_analisa_data),
     Route("/api/sco/generate",  api_sco_generate, methods=["GET", "POST"]),
     Route("/api/sco/push",      api_sco_push,     methods=["GET", "POST"]),
     Route("/api/sco/check",     api_sco_check,    methods=["GET", "POST"]),

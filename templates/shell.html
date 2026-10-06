@@ -4,9 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Web Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/app.css">
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('theme_preference');
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      }
+    })();
+  </script>
   <script src="/static/js/chart.min.js"></script>
   <script src="/static/js/html2canvas.min.js"></script>
+  <script src="/static/js/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -55,14 +67,14 @@
         </a>
       </li>
       <li class="nav-item">
-        <a href="#reseller" class="nav-link">
+        <a href="#reseller" class="nav-link" id="nav-agen-reseller">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
-          Customer &amp; Reseller
+          Agen &amp; Reseller
         </a>
       </li>
       <li class="nav-item">
@@ -72,8 +84,37 @@
             <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
             <line x1="12" y1="22.08" x2="12" y2="12"></line>
           </svg>
-          Produk
+          Produk Fisik
         </a>
+      </li>
+
+      <li class="nav-label" style="margin-top: 16px;">Analisa</li>
+      <li class="nav-item">
+        <a href="#analisa" class="nav-link" id="nav-analisa-main">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          Dashboard Analisa
+        </a>
+        <ul class="nav-sub-menu" id="sub-menu-analisa">
+          <li>
+            <a href="#analisa-distribusi" class="nav-sub-link" id="sub-nav-distribusi" title="Relasi trx &amp; customer by year by month">
+              Analisa Distribusi
+            </a>
+          </li>
+          <li>
+            <a href="#analisa-service" class="nav-sub-link" id="sub-nav-service" title="Relasi trx &amp; product by year by month">
+              Analisa Service
+            </a>
+          </li>
+          <li>
+            <a href="#analisa-lain" class="nav-sub-link" id="sub-nav-lain" title="Analisa lain-lain">
+              Analisa Lain Lain
+            </a>
+          </li>
+        </ul>
       </li>
       <li class="nav-item">
         <a href="#transaksi" class="nav-link">
@@ -94,13 +135,13 @@
             <polyline points="1 20 1 14 7 14"></polyline>
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
           </svg>
-          Sync &amp; Cache
+          Sistem &amp; Pengaturan
         </a>
       </li>
     </ul>
 
     <div class="sidebar-footer">
-      <span>Web Report v1.0</span>
+      <span>Web Report v2.4</span>
       <span class="badge">2026</span>
     </div>
   </aside>
@@ -126,6 +167,6 @@
     </main>
   </div>
 
-  <script src="/static/js/app.js?v=2"></script>
+  <script src="/static/js/app.js?v=6"></script>
 </body>
 </html>

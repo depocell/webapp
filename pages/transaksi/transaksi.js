@@ -1,7 +1,7 @@
-// transaksi.js — Controller untuk Pivot Table by Channel & Pivot Table by Product
+// transaksi.js — Controller untuk Pivot Transaksi Digital
 
 let pivotBrand = "ASTAGA";
-let pivotSubPage = "channel";
+let pivotSubPage = "product";
 let lastPivotData = null;
 
 function formatMoney(num) {
@@ -15,31 +15,7 @@ function formatInt(num) {
 }
 
 function switchPivotSubPage(sub) {
-  pivotSubPage = sub;
-
-  const btnChan = document.getElementById("tab-piv-channel");
-  const btnProd = document.getElementById("tab-piv-product");
-  const titleEl = document.getElementById("piv-main-title");
-  const descEl  = document.getElementById("piv-main-desc");
-  const boxKat  = document.getElementById("piv-box-kategori");
-  const boxOp   = document.getElementById("piv-box-operator");
-
-  if (sub === "product") {
-    if (btnChan) btnChan.className = "subpage-tab";
-    if (btnProd) btnProd.className = "subpage-tab active-subpage-tab";
-    if (titleEl) titleEl.textContent = "Pivot Table by Product";
-    if (descEl) descEl.textContent = "Analisis multidimensi fleksibel transaksi berdasarkan Kategori Produk, Operator, Paket, dan Suplier";
-    if (boxKat) boxKat.style.display = "block";
-    if (boxOp) boxOp.style.display = "block";
-  } else {
-    if (btnChan) btnChan.className = "subpage-tab active-subpage-tab";
-    if (btnProd) btnProd.className = "subpage-tab";
-    if (titleEl) titleEl.textContent = "Pivot Table by Channel";
-    if (descEl) descEl.textContent = "Analisis multidimensi fleksibel berdasarkan Cabang, Induk / Agen, Reseller, dan Channel Distribusi";
-    if (boxKat) boxKat.style.display = "none";
-    if (boxOp) boxOp.style.display = "none";
-  }
-
+  pivotSubPage = sub || "product";
   loadPivotOptions();
 }
 
@@ -198,7 +174,7 @@ async function runPivot() {
   const operatorFilter = (pivotSubPage === "product" && opSel) ? opSel.value : "ALL";
 
   const tbody = document.getElementById("piv-tbody");
-  tbody.innerHTML = `<tr><td class="loader" colspan="10">Menghitung agregasi ${pivotSubPage === "product" ? "Product" : "Channel"} pivot table...</td></tr>`;
+  tbody.innerHTML = `<tr><td class="loader" colspan="10">Menghitung agregasi Pivot Transaksi Digital...</td></tr>`;
 
   try {
     const params = new URLSearchParams({
@@ -223,20 +199,30 @@ async function runPivot() {
     const data = json.data;
     lastPivotData = data;
 
-    // Update Summary Strip
+    // Update Summary Strip if present
     if (data.summary) {
-      document.getElementById("piv-sum-trx").textContent = formatInt(data.summary.total_trx);
-      document.getElementById("piv-sum-daily-trx").textContent = `Daily: ${formatInt(Math.round(data.summary.daily_trx))} / hari`;
-      document.getElementById("piv-sum-jual").textContent = formatMoney(data.summary.total_jual);
-      document.getElementById("piv-sum-daily-jual").textContent = `Daily: ${formatMoney(data.summary.daily_jual)} / hari`;
-      document.getElementById("piv-sum-margin").textContent = formatMoney(data.summary.total_margin);
-      document.getElementById("piv-sum-daily-margin").textContent = `Daily: ${formatMoney(data.summary.daily_margin)} / hari`;
-      document.getElementById("piv-sum-rate").textContent = `${data.summary.sukses_rate.toFixed(1)}%`;
-      document.getElementById("piv-sum-days").textContent = `${data.summary.active_days} Hari Aktif`;
+      const elTrx = document.getElementById("piv-sum-trx");
+      if (elTrx) elTrx.textContent = formatInt(data.summary.total_trx);
+      const elDailyTrx = document.getElementById("piv-sum-daily-trx");
+      if (elDailyTrx) elDailyTrx.textContent = `Daily: ${formatInt(Math.round(data.summary.daily_trx))} / hari`;
+      const elJual = document.getElementById("piv-sum-jual");
+      if (elJual) elJual.textContent = formatMoney(data.summary.total_jual);
+      const elDailyJual = document.getElementById("piv-sum-daily-jual");
+      if (elDailyJual) elDailyJual.textContent = `Daily: ${formatMoney(data.summary.daily_jual)} / hari`;
+      const elMargin = document.getElementById("piv-sum-margin");
+      if (elMargin) elMargin.textContent = formatMoney(data.summary.total_margin);
+      const elDailyMargin = document.getElementById("piv-sum-daily-margin");
+      if (elDailyMargin) elDailyMargin.textContent = `Daily: ${formatMoney(data.summary.daily_margin)} / hari`;
+      const elRate = document.getElementById("piv-sum-rate");
+      if (elRate) elRate.textContent = `${data.summary.sukses_rate.toFixed(1)}%`;
+      const elDays = document.getElementById("piv-sum-days");
+      if (elDays) elDays.textContent = `${data.summary.active_days} Hari Aktif`;
     }
 
-    document.getElementById("piv-exec-time").textContent = `Selesai dalam ${data.elapsed_ms} ms`;
-    document.getElementById("piv-table-title").textContent = `Tabel Hasil Pivot (${pivotSubPage === "product" ? "Product" : "Channel"})`;
+    const execEl = document.getElementById("piv-exec-time");
+    if (execEl) execEl.textContent = `Selesai dalam ${data.elapsed_ms} ms`;
+    const titleEl = document.getElementById("piv-table-title");
+    if (titleEl) titleEl.textContent = `Tabel Hasil Pivot Transaksi Digital`;
 
     // Render Table
     renderPivotTable(data, metric);
@@ -368,6 +354,91 @@ function renderPivotTable(data, metric) {
   }
 }
 
+function ensureXlsxLoaded() {
+  if (typeof XLSX !== 'undefined') return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = '/static/js/xlsx.full.min.js';
+    s.onload = () => resolve();
+    s.onerror = (err) => reject(err);
+    document.head.appendChild(s);
+  });
+}
+
+async function exportPivotExcel() {
+  const table = document.getElementById("piv-result-table");
+  if (!table) return;
+
+  const rows = table.querySelectorAll("tr");
+  if (!rows || rows.length <= 1) {
+    alert("Tidak ada data pivot untuk diekspor.");
+    return;
+  }
+
+  const brand = pivotBrand || "ASTAGA";
+  const monthFilter = document.getElementById("piv-filter-month") ? document.getElementById("piv-filter-month").value : "ALL";
+  const rowDim = document.getElementById("piv-row-dim") ? document.getElementById("piv-row-dim").value : "dim";
+  const metric = document.getElementById("piv-metric") ? document.getElementById("piv-metric").value : "metric";
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const filename = `Pivot_Digital_${brand}_${monthFilter}_${rowDim}_${dateStr}.xlsx`;
+
+  try {
+    await ensureXlsxLoaded();
+
+    // Bangun data sheet dari baris HTML tabel
+    const sheetData = [];
+    rows.forEach(tr => {
+      const row = [];
+      const cells = tr.querySelectorAll("th, td");
+      cells.forEach(cell => {
+        let text = cell.innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
+        
+        // Parse format angka jika sel numerik
+        // Deteksi Rp ...
+        if (text.startsWith("Rp")) {
+          const numStr = text.replace(/Rp\s*/g, "").replace(/\./g, "").replace(/,/g, ".");
+          const num = parseFloat(numStr);
+          row.push(!isNaN(num) ? num : text);
+        } else if (text.endsWith("%")) {
+          const numStr = text.replace(/%/g, "").replace(/,/g, ".");
+          const num = parseFloat(numStr);
+          row.push(!isNaN(num) ? num / 100 : text);
+        } else if (/^-?\d{1,3}(\.\d{3})*$/.test(text)) {
+          // Format ribuan id-ID: 1.234.567
+          const num = parseInt(text.replace(/\./g, ""), 10);
+          row.push(!isNaN(num) ? num : text);
+        } else if (/^-?\d+(\.\d+)?$/.test(text)) {
+          const num = parseFloat(text);
+          row.push(!isNaN(num) ? num : text);
+        } else {
+          row.push(text);
+        }
+      });
+      if (row.length > 0) sheetData.push(row);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+    // Auto set column widths
+    const colWidths = [];
+    sheetData.forEach(row => {
+      row.forEach((val, cIdx) => {
+        const len = (val !== null && val !== undefined) ? String(val).length : 8;
+        colWidths[cIdx] = Math.max(colWidths[cIdx] || 12, Math.min(len + 4, 45));
+      });
+    });
+    ws['!cols'] = colWidths.map(w => ({ wch: w }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pivot Transaksi");
+    XLSX.writeFile(wb, filename);
+
+  } catch (err) {
+    console.warn("Gagal mengekspor via XLSX, fallback ke CSV:", err);
+    exportPivotCSV();
+  }
+}
+
 function exportPivotCSV() {
   const table = document.getElementById("piv-result-table");
   if (!table) return;
@@ -401,11 +472,11 @@ function switchPivotBrand(b) {
   const btnO = document.getElementById("btn-piv-oki");
 
   if (b === "ASTAGA") {
-    btnA.className = "brand-pill active-brand-astaga";
-    btnO.className = "brand-pill";
+    btnA.className = "brand-btn active-brand-astaga";
+    btnO.className = "brand-btn";
   } else {
-    btnA.className = "brand-pill";
-    btnO.className = "brand-pill active-brand-oki";
+    btnA.className = "brand-btn";
+    btnO.className = "brand-btn active-brand-oki";
   }
 
   loadPivotOptions();
@@ -413,9 +484,10 @@ function switchPivotBrand(b) {
 
 // Global exports for shell router
 window.loadTransaksi = function() {
-  switchPivotSubPage("channel");
+  switchPivotSubPage("product");
 };
 window.switchPivotSubPage = switchPivotSubPage;
 window.switchPivotBrand = switchPivotBrand;
 window.runPivot = runPivot;
+window.exportPivotExcel = exportPivotExcel;
 window.exportPivotCSV = exportPivotCSV;

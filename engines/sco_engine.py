@@ -89,8 +89,17 @@ def load_master_customers():
     agen_profiles = {}
     for _, row in df_a.iterrows():
         aid = str(row["AGEN ID"]).strip()
+        raw_name = str(row.get("NAMA AGEN", row.get("AGEN NAME", ""))).strip()
+        if raw_name and raw_name.lower() != "nan":
+            if not raw_name.startswith(aid):
+                full_name = f"{aid} - {raw_name}"
+            else:
+                full_name = raw_name
+        else:
+            full_name = aid
+
         agen_profiles[aid] = {
-            "name": str(row.get("AGEN NAME", "")).strip(),
+            "name": full_name,
             "cabang": str(row.get("CABANG", "")).strip(),
             "sco": str(row.get("SCO", "")).strip(),
             "type": str(row.get("TYPE", "")).strip(),
@@ -431,81 +440,156 @@ def generate_sco_data():
 
     tren_agen_rows.sort(key=lambda x: x["avg_curr"], reverse=True)
 
-    # 3. EXTRACT KPI_SCO
+    # 3. EXTRACT KPI_SCO & KPI_DSO
     kpi_sco_json = []
-    if os.path.exists(KPI_EXCEL_PATH):
+    kpi_dso_json = []
+    kpi_file_to_read = KPI_EXCEL_PATH if os.path.exists(KPI_EXCEL_PATH) else os.path.join(SCO_DIR, "KPI_SCO.xls")
+    if os.path.exists(kpi_file_to_read):
         try:
             import openpyxl
-            wb_kpi = openpyxl.load_workbook(KPI_EXCEL_PATH, data_only=True)
-            ws_kpi = wb_kpi['KPI_SCO'] if 'KPI_SCO' in wb_kpi.sheetnames else wb_kpi.active
-            kpi_rows = list(ws_kpi.iter_rows(values_only=True))
-            if len(kpi_rows) > 1:
-                def _safe_float(v):
-                    if v is None or v == "": return 0.0
-                    try:
-                        return float(str(v).replace(",", "."))
-                    except Exception:
-                        return 0.0
+            wb_kpi = openpyxl.load_workbook(kpi_file_to_read, data_only=True)
 
-                def _safe_pct(v):
-                    val = _safe_float(v)
-                    return val * 100.0 if abs(val) <= 2.0 and val != 0 else val
+            def _safe_float(v):
+                if v is None or v == "": return 0.0
+                try:
+                    return float(str(v).replace(",", "."))
+                except Exception:
+                    return 0.0
 
-                for r in kpi_rows[1:]:
-                    nama = str(r[1] or "").strip()
-                    if not nama or nama.lower() in ("nama", "total", ""):
-                        continue
+            def _safe_pct(v):
+                val = _safe_float(v)
+                return val * 100.0 if abs(val) <= 2.0 and val != 0 else val
 
-                    bulan_val = r[0]
-                    if isinstance(bulan_val, (datetime.date, datetime.datetime)):
-                        bulan_str = bulan_val.strftime("%Y-%m-%d")
-                    else:
-                        bulan_str = str(bulan_val or "").strip()
+            # --- A. KPI_SCO ---
+            if 'KPI_SCO' in wb_kpi.sheetnames:
+                ws_kpi = wb_kpi['KPI_SCO']
+                kpi_rows = list(ws_kpi.iter_rows(values_only=True))
+                if len(kpi_rows) > 1:
+                    for r in kpi_rows[1:]:
+                        nama = str(r[1] or "").strip()
+                        if not nama or nama.lower() in ("nama", "total", ""):
+                            continue
 
-                    pjp = int(_safe_float(r[2]))
-                    tgt_visit = _safe_float(r[3])
-                    ach_visit = _safe_float(r[4])
-                    pct_visit = _safe_pct(r[5]) if r[5] is not None else ((ach_visit / tgt_visit * 100.0) if tgt_visit > 0 else 0.0)
+                        bulan_val = r[0]
+                        if isinstance(bulan_val, (datetime.date, datetime.datetime)):
+                            bulan_str = bulan_val.strftime("%Y-%m-%d")
+                        else:
+                            bulan_str = str(bulan_val or "").strip()
 
-                    tgt_coll = _safe_float(r[6])
-                    ach_coll = _safe_float(r[7])
-                    pct_coll = _safe_pct(r[8]) if r[8] is not None else ((ach_coll / tgt_coll * 100.0) if tgt_coll > 0 else 0.0)
+                        pjp = int(_safe_float(r[2]))
+                        tgt_visit = _safe_float(r[3])
+                        ach_visit = _safe_float(r[4])
+                        pct_visit = _safe_pct(r[5]) if r[5] is not None else ((ach_visit / tgt_visit * 100.0) if tgt_visit > 0 else 0.0)
 
-                    tgt_trx = _safe_float(r[9]) if len(r) > 9 else 0.0
-                    ach_trx = _safe_float(r[10]) if len(r) > 10 else 0.0
-                    pct_trx = _safe_pct(r[11]) if len(r) > 11 and r[11] is not None else ((ach_trx / tgt_trx * 100.0) if tgt_trx > 0 else 0.0)
+                        tgt_coll = _safe_float(r[6])
+                        ach_coll = _safe_float(r[7])
+                        pct_coll = _safe_pct(r[8]) if r[8] is not None else ((ach_coll / tgt_coll * 100.0) if tgt_coll > 0 else 0.0)
 
-                    trx_lalu = _safe_float(r[12]) if len(r) > 12 else 0.0
-                    trx_ini = _safe_float(r[13]) if len(r) > 13 else 0.0
-                    growth = _safe_pct(r[14]) if len(r) > 14 and r[14] is not None else (((trx_ini - trx_lalu) / trx_lalu * 100.0) if trx_lalu > 0 else 0.0)
+                        tgt_trx = _safe_float(r[9]) if len(r) > 9 else 0.0
+                        ach_trx = _safe_float(r[10]) if len(r) > 10 else 0.0
+                        pct_trx = _safe_pct(r[11]) if len(r) > 11 and r[11] is not None else ((ach_trx / tgt_trx * 100.0) if tgt_trx > 0 else 0.0)
 
-                    score = _safe_pct(r[15]) if len(r) > 15 and r[15] is not None else 0.0
-                    if score == 0.0:
-                        score = (pct_visit * 0.15) + (pct_coll * 0.25) + (pct_trx * 0.35) + (growth * 0.25)
-                    insentif = _safe_float(r[16]) if len(r) > 16 else 0.0
+                        trx_lalu = _safe_float(r[12]) if len(r) > 12 else 0.0
+                        trx_ini = _safe_float(r[13]) if len(r) > 13 else 0.0
+                        growth = _safe_pct(r[14]) if len(r) > 14 and r[14] is not None else (((trx_ini - trx_lalu) / trx_lalu * 100.0) if trx_lalu > 0 else 0.0)
 
-                    kpi_sco_json.append({
-                        "bulan": bulan_str,
-                        "nama": nama,
-                        "pjp": pjp,
-                        "tgt_visit": round(tgt_visit, 0),
-                        "ach_visit": round(ach_visit, 0),
-                        "pct_visit": round(pct_visit, 1),
-                        "tgt_coll": round(tgt_coll, 0),
-                        "ach_coll": round(ach_coll, 0),
-                        "pct_coll": round(pct_coll, 1),
-                        "tgt_trx": round(tgt_trx, 1),
-                        "ach_trx": round(ach_trx, 1),
-                        "pct_trx": round(pct_trx, 1),
-                        "trx_lalu": round(trx_lalu, 1),
-                        "trx_ini": round(trx_ini, 1),
-                        "growth": round(growth, 1),
-                        "score": round(score, 1),
-                        "insentif": round(insentif, 0)
-                    })
+                        score = _safe_pct(r[15]) if len(r) > 15 and r[15] is not None else 0.0
+                        if score == 0.0:
+                            score = (pct_visit * 0.15) + (pct_coll * 0.25) + (pct_trx * 0.35) + (growth * 0.25)
+                        insentif = _safe_float(r[16]) if len(r) > 16 else 0.0
+
+                        kpi_sco_json.append({
+                            "bulan": bulan_str,
+                            "nama": nama,
+                            "pjp": pjp,
+                            "tgt_visit": round(tgt_visit, 0),
+                            "ach_visit": round(ach_visit, 0),
+                            "pct_visit": round(pct_visit, 1),
+                            "tgt_coll": round(tgt_coll, 0),
+                            "ach_coll": round(ach_coll, 0),
+                            "pct_coll": round(pct_coll, 1),
+                            "tgt_trx": round(tgt_trx, 1),
+                            "ach_trx": round(ach_trx, 1),
+                            "pct_trx": round(pct_trx, 1),
+                            "trx_lalu": round(trx_lalu, 1),
+                            "trx_ini": round(trx_ini, 1),
+                            "growth": round(growth, 1),
+                            "score": round(score, 1),
+                            "insentif": round(insentif, 0)
+                        })
+
+            # --- B. KPI_DSO ---
+            if 'KPI_DSO' in wb_kpi.sheetnames:
+                ws_dso = wb_kpi['KPI_DSO']
+                dso_rows = list(ws_dso.iter_rows(values_only=True))
+                if len(dso_rows) > 3:
+                    for r in dso_rows[3:]:
+                        bulan_val = r[0]
+                        if bulan_val is None or str(bulan_val).strip() == "":
+                            continue
+                        if isinstance(bulan_val, (datetime.date, datetime.datetime)):
+                            bulan_str = bulan_val.strftime("%Y-%m-%d")
+                        else:
+                            bulan_str = str(bulan_val).strip()
+
+                        tgt_new = _safe_float(r[1])
+                        ach_new = _safe_float(r[2])
+                        pct_new = _safe_pct(r[3]) if r[3] is not None else ((ach_new / tgt_new * 100.0) if tgt_new > 0 else 0.0)
+
+                        tgt_trx = _safe_float(r[4])
+                        ach_trx = _safe_float(r[5])
+                        pct_trx = _safe_pct(r[6]) if r[6] is not None else ((ach_trx / tgt_trx * 100.0) if tgt_trx > 0 else 0.0)
+
+                        tgt_voc = _safe_float(r[7])
+                        ach_voc = _safe_float(r[8])
+                        pct_voc = _safe_pct(r[9]) if r[9] is not None else ((ach_voc / tgt_voc * 100.0) if tgt_voc > 0 else 0.0)
+
+                        tgt_prd = _safe_float(r[10])
+                        ach_prd = _safe_float(r[11])
+                        pct_prd = _safe_pct(r[12]) if r[12] is not None else ((ach_prd / tgt_prd * 100.0) if tgt_prd > 0 else 0.0)
+
+                        score = _safe_pct(r[13]) if len(r) > 13 and r[13] is not None else 0.0
+                        if score == 0.0 and (tgt_new > 0 or tgt_trx > 0 or tgt_voc > 0 or tgt_prd > 0):
+                            score = (pct_new * 0.3) + (pct_trx * 0.2) + (pct_voc * 0.3) + (pct_prd * 0.2)
+
+                        multiplier = _safe_pct(r[15]) if len(r) > 15 and r[15] is not None else 0.0
+                        if multiplier == 0.0 and score > 0:
+                            if score >= 120.0:
+                                multiplier = 120.0
+                            elif score >= 70.0:
+                                multiplier = score
+                            elif score >= 60.0:
+                                multiplier = 50.0
+                            else:
+                                multiplier = 0.0
+
+                        insentif = _safe_float(r[16]) if len(r) > 16 else 0.0
+                        if insentif == 0.0 and multiplier > 0:
+                            insentif = ((ach_trx * 31.0) + (ach_voc + ach_prd)) * 50.0 * (multiplier / 100.0)
+
+                        kpi_dso_json.append({
+                            "bulan": bulan_str,
+                            "nama": "Ahmad Bukhori",
+                            "tgt_new_member": round(tgt_new, 0),
+                            "ach_new_member": round(ach_new, 0),
+                            "pct_new_member": round(pct_new, 1),
+                            "tgt_daily_trx": round(tgt_trx, 1),
+                            "ach_daily_trx": round(ach_trx, 1),
+                            "pct_daily_trx": round(pct_trx, 1),
+                            "tgt_voucher": round(tgt_voc, 0),
+                            "ach_voucher": round(ach_voc, 0),
+                            "pct_voucher": round(pct_voc, 1),
+                            "tgt_perdana": round(tgt_prd, 0),
+                            "ach_perdana": round(ach_prd, 0),
+                            "pct_perdana": round(pct_prd, 1),
+                            "score": round(score, 1),
+                            "multiplier": round(multiplier, 1),
+                            "insentif": round(insentif, 0)
+                        })
+
             wb_kpi.close()
         except Exception as err:
-            print(f"[WARN] Error extracting KPI_SCO to JSON: {err}")
+            print(f"[WARN] Error extracting KPI to JSON: {err}")
 
     # 4. WRITE data_sco.json
     latest_meta = periods.get(latest_m, {})
@@ -526,7 +610,8 @@ def generate_sco_data():
         "index": latest_meta.get("index", []),
         "tren_agen": tren_agen_rows,
         "tren_harian": harian_json_list,
-        "kpi_sco": kpi_sco_json
+        "kpi_sco": kpi_sco_json,
+        "kpi_dso": kpi_dso_json
     }
 
     os.makedirs(SCO_DIR, exist_ok=True)
@@ -592,21 +677,28 @@ def generate_reseller_data(df_sukses: pd.DataFrame = None, months: list = None) 
         member_to_agen = dict(zip(df_r["Kode Reseller"], df_r["Agen id"]))
 
         agen_to_sco = {}
+        agen_to_cabang = {}
+        agen_to_jadwal = {}
         agen_to_limit = {}
         for _, row in df_a.iterrows():
             aid = str(row["AGEN ID"]).strip()
             sco = str(row.get("SCO", "")).strip()
             cab = str(row.get("CABANG", "")).strip()
+            jadwal = str(row.get("JADWAL", "")).strip()
             if cab.upper() == "ONLINE" or sco.upper() == "ONLINE":
                 agen_to_sco[aid] = "ONLINE"
             elif sco:
                 agen_to_sco[aid] = sco
+            agen_to_cabang[aid] = cab
+            agen_to_jadwal[aid] = jadwal
             try:
                 agen_to_limit[aid] = float(row.get("LIMIT", 0))
             except Exception:
                 agen_to_limit[aid] = 0.0
 
         member_to_sco = {m_id: agen_to_sco.get(a_id, "-") for m_id, a_id in member_to_agen.items()}
+        member_to_cabang = {m_id: agen_to_cabang.get(a_id, "-") for m_id, a_id in member_to_agen.items()}
+        member_to_jadwal = {m_id: agen_to_jadwal.get(a_id, "-") for m_id, a_id in member_to_agen.items()}
         member_to_limit = {m_id: agen_to_limit.get(a_id, 0.0) for m_id, a_id in member_to_agen.items()}
 
         # Load product categories
@@ -689,6 +781,8 @@ def generate_reseller_data(df_sukses: pd.DataFrame = None, months: list = None) 
                     "voucher_game": int(r["VOUCHER GAME"]),
                     "grand_total": int(r["Grand Total"]),
                     "sco": member_to_sco.get(kres, "-"),
+                    "cabang": member_to_cabang.get(kres, "-"),
+                    "jadwal": member_to_jadwal.get(kres, "-"),
                     "limit": member_to_limit.get(kres, 0.0)
                 }
                 m_rows.append(row_dict)
@@ -700,6 +794,8 @@ def generate_reseller_data(df_sukses: pd.DataFrame = None, months: list = None) 
                         "name": str(rname) if str(rname) != "nan" else str(kres),
                         "group": str(grp),
                         "sco": member_to_sco.get(kres, "-"),
+                        "cabang": member_to_cabang.get(kres, "-"),
+                        "jadwal": member_to_jadwal.get(kres, "-"),
                         "limit": member_to_limit.get(kres, 0.0),
                         "total_trx": 0,
                         "total_ewallet": 0,
